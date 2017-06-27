@@ -8,15 +8,20 @@ ModelImporter:
     100000: //RootNode
     100002: Base
     100004: Lever
+    100006: Sphere
     400000: //RootNode
     400002: Base
     400004: Lever
+    400006: Sphere
     2300000: Base
     2300002: Lever
+    2300004: Sphere
     3300000: Base
     3300002: Lever
+    3300004: Sphere
     4300000: Lever
     4300002: Base
+    4300004: Sphere
   materials:
     importMaterials: 1
     materialName: 0
