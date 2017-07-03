@@ -15,16 +15,21 @@ public class VRObjectStand : MonoBehaviour
     private Keycard objectInRange;
     private Keycard keycardIn;
 
+
+    public ControllerGrabObject[] grabs;
+
     // Use this for initialization
     void Start()
     {
         meshRenderer = GetComponent<MeshRenderer>();
         origColor = meshRenderer.material.color;
 
-        foreach (var item in GameObject.FindObjectsOfType<ControllerGrabObject>())
+
+        foreach (var item in grabs)
         {
             item.ObjectReleased += OnControllerDropObject;
         }
+     
     }
 
     // Update is called once per frame
@@ -44,6 +49,12 @@ public class VRObjectStand : MonoBehaviour
                 keycardInserted.Invoke(card);
                 card.transform.position = targetTransform.position;
                 card.transform.rotation = targetTransform.rotation;
+
+                FixedJoint fx = gameObject.AddComponent<FixedJoint>();
+                fx.breakForce = 100;
+                fx.breakTorque = 100;
+                fx.connectedBody = card.GetComponent<Rigidbody>();
+                
             }
         }
     }
