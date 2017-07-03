@@ -15,7 +15,7 @@ public class SecurityCamera : MonoBehaviour {
 	void Update () {
         transform.Rotate(new Vector3(zRot, 0f, yRot), Space.Self);
         //transform.localRotation = Quaternion.Euler(new Vector3(zRot, yRot, 0f)+ transform.localRotation.eulerAngles);
-        Debug.Log(transform.localRotation.eulerAngles);
+        //Debug.Log(transform.localRotation.eulerAngles);
 	}
 
 }
