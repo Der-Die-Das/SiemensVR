@@ -2,6 +2,7 @@
 
 public class ControllerGrabObject : MonoBehaviour
 {
+    public System.Action<GameObject> ObjectReleased;
     private SteamVR_TrackedObject trackedObj;
 
     private GameObject collidingObject;
@@ -93,6 +94,10 @@ public class ControllerGrabObject : MonoBehaviour
             objectInHand.GetComponent<Rigidbody>().angularVelocity = Controller.angularVelocity;
         }
 
+        if (ObjectReleased != null)
+        {
+            ObjectReleased.Invoke(objectInHand);
+        }
         objectInHand = null;
     }
 }
