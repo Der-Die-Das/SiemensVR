@@ -58,7 +58,7 @@ public class ButtonInteract : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         VRButton button = other.GetComponent<VRButton>();
-        if (button == buttonInRange)
+        if (button != null && button == buttonInRange)
         {
             buttonInRange = null;
             button.OnControllerLeave();

@@ -76,7 +76,7 @@ public class VRComputer : MonoBehaviour
     }
     private void SetActiveCamera(int index)
     {
-        cameras[activeCamera].SetTargetTexture(null);
+        cameras[activeCamera].RemoveTargetTexture();
         activeCamera = index;
         cameras[activeCamera].SetTargetTexture(tex);
     }
