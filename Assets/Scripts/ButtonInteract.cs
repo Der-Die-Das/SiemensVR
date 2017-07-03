@@ -14,10 +14,9 @@ public class ButtonInteract : MonoBehaviour
 
     private VRButton buttonInRange;
 
-    // Use this for initialization
-    void Start()
+    void Awake()
     {
-
+        trackedObj = GetComponent<SteamVR_TrackedObject>();
     }
 
     // Update is called once per frame
@@ -36,10 +35,23 @@ public class ButtonInteract : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         VRButton button = other.GetComponent<VRButton>();
-        if (button != null)
+        if (button != null && buttonInRange == null)
         {
             buttonInRange = button;
             button.OnControllerEnter();
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (buttonInRange == null)
+        {
+            VRButton button = other.GetComponent<VRButton>();
+            if (button != null)
+            {
+                buttonInRange = button;
+                button.OnControllerEnter();
+            }
         }
     }
 
