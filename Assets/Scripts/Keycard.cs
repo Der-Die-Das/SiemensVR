@@ -5,6 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class Keycard : MonoBehaviour
 {
-    //doors etc
+    /// <summary>
+    /// 1 - 5
+    /// </summary>
+    public List<int> permittedRooms;
 
 }

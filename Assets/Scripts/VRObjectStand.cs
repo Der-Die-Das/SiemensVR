@@ -10,6 +10,7 @@ public class VRObjectStand : MonoBehaviour
     public System.Action<Keycard> keycardEjected;
     public Transform targetTransform;
     public VRButton ejectButton;
+    public float ejectForce = 500f;
 
     private Color origColor;
     private MeshRenderer meshRenderer;
@@ -43,7 +44,7 @@ public class VRObjectStand : MonoBehaviour
     private void OnEject(int no)
     {
         Destroy(gameObject.GetComponent<Joint>());
-        keycardIn.GetComponent<Rigidbody>().AddForce(transform.forward*1000f);
+        keycardIn.GetComponent<Rigidbody>().AddForce(transform.forward* ejectForce);
     }
 
     private void OnControllerDropObject(GameObject obj)
