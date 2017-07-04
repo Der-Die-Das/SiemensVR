@@ -41,7 +41,8 @@ public class ControllerGrabObject : MonoBehaviour
 
     private void SetCollidingObject(Collider col)
     {
-        if (collidingObject || !col.GetComponent<Rigidbody>())
+        Rigidbody rb = col.GetComponent<Rigidbody>();
+        if (collidingObject || rb == null || rb.isKinematic == true)
         {
             return;
         }
@@ -72,8 +73,15 @@ public class ControllerGrabObject : MonoBehaviour
     {
         objectInHand = collidingObject;
         collidingObject = null;
+        objectInHand.transform.position = Vector3.Lerp(transform.position,objectInHand.transform.position, 0.8f);
         var joint = AddFixedJoint();
         joint.connectedBody = objectInHand.GetComponent<Rigidbody>();
+
+        //FixedJoint j = objectInHand.GetComponent<FixedJoint>();
+        //if (j != null)  
+        //{
+        //    Destroy(j);
+        //}
     }
 
     private FixedJoint AddFixedJoint()

@@ -9,6 +9,7 @@ public class VRObjectStand : MonoBehaviour
     public System.Action<Keycard> keycardInserted;
     public System.Action<Keycard> keycardEjected;
     public Transform targetTransform;
+    public VRButton ejectButton;
 
     private Color origColor;
     private MeshRenderer meshRenderer;
@@ -29,6 +30,7 @@ public class VRObjectStand : MonoBehaviour
         {
             item.ObjectReleased += OnControllerDropObject;
         }
+        ejectButton.buttonPressed += OnEject;
      
     }
 
@@ -36,6 +38,12 @@ public class VRObjectStand : MonoBehaviour
     void Update()
     {
 
+    }
+
+    private void OnEject(int no)
+    {
+        Destroy(gameObject.GetComponent<Joint>());
+        keycardIn.GetComponent<Rigidbody>().AddForce(transform.forward*1000f);
     }
 
     private void OnControllerDropObject(GameObject obj)
@@ -51,8 +59,8 @@ public class VRObjectStand : MonoBehaviour
                 card.transform.rotation = targetTransform.rotation;
 
                 FixedJoint fx = gameObject.AddComponent<FixedJoint>();
-                fx.breakForce = 100;
-                fx.breakTorque = 100;
+                fx.breakForce = 5000;
+                fx.breakTorque = 5000;
                 fx.connectedBody = card.GetComponent<Rigidbody>();
                 
             }
