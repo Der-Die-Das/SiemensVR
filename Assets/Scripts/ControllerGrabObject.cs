@@ -54,6 +54,9 @@ public class ControllerGrabObject : MonoBehaviour
         collidingObject = null;
     }
 
+    /// <summary>
+    /// In here we check if the collision that jsut occured is relevant 
+    /// </summary>
     private void SetCollidingObject(Collider col)
     {
         if (collidingObject || !col.GetComponent<Rigidbody>())

@@ -6,7 +6,7 @@ using UnityEngine;
 public class Keycard : MonoBehaviour
 {
     /// <summary>
-    /// 1 - 5
+    /// The room numbers are 1 - 5
     /// </summary>
     public List<int> permittedRooms;
 

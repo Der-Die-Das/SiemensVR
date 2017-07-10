@@ -28,17 +28,9 @@ public class KeycardReader : MonoBehaviour
 
     private void OnButtonPress(int value)
     {
-        switch (value)
+        if (value < 6 && value > 0)
         {
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-                changeCardDooState(value);
-                break;
-            default:
-                break;
+            changeCardDooState(value);
         }
     }
     private void changeCardDooState(int id)

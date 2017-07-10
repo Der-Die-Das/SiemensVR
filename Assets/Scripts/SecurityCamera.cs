@@ -12,10 +12,6 @@ public class SecurityCamera : MonoBehaviour
     {
         origPos = renderCamera.transform.position;
     }
-    // Update is called once per frame
-    void Update()
-    {
-    }
 
     private void LateUpdate()
     {

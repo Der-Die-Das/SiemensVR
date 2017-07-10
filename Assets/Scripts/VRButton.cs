@@ -9,6 +9,7 @@ public class VRButton : MonoBehaviour
     public int value;
     public Color targetColor = Color.red;
     public Action<int> buttonPressed;
+
     private Animator anim;
     private Color origColor;
     private MeshRenderer meshRenderer;
@@ -29,16 +30,26 @@ public class VRButton : MonoBehaviour
         anim.SetTrigger("Press");
     }
 
+    /// <summary>
+    /// Gets called from the controller (ButtonInteract Script)
+    /// </summary>
     public void OnControllerEnter()
     {
         meshRenderer.material.color = targetColor;
     }
 
+    /// <summary>
+    /// Gets called from the controller (ButtonInteract Script)
+    /// </summary>
     public void OnControllerLeave()
     {
         meshRenderer.material.color = origColor;
     }
 
+
+    /// <summary>
+    /// Gets called from the controller (ButtonInteract Script)
+    /// </summary>
     public void Interact()
     {
         if (buttonPressed != null)
