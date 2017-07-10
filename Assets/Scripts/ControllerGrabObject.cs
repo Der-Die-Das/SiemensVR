@@ -1,11 +1,26 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Thje Script is attached to a Controller
+/// Script to grab Objects with a Rigidbody
+/// </summary>
 public class ControllerGrabObject : MonoBehaviour
 {
+    /// <summary>
+    /// Event which gets fires when we relrease a object.
+    /// Gameobject is the object we release.
+    /// </summary>
     public System.Action<GameObject> ObjectReleased;
+
     private SteamVR_TrackedObject trackedObj;
 
+    /// <summary>
+    /// When our controller collide with a object we save it here
+    /// </summary>
     private GameObject collidingObject;
+    /// <summary>
+    /// When we grab a object we save it here
+    /// </summary>
     private GameObject objectInHand;
 
     private SteamVR_Controller.Device Controller
@@ -41,8 +56,7 @@ public class ControllerGrabObject : MonoBehaviour
 
     private void SetCollidingObject(Collider col)
     {
-        Rigidbody rb = col.GetComponent<Rigidbody>();
-        if (collidingObject || rb == null || rb.isKinematic == true)
+        if (collidingObject || !col.GetComponent<Rigidbody>())
         {
             return;
         }
@@ -76,12 +90,6 @@ public class ControllerGrabObject : MonoBehaviour
         objectInHand.transform.position = Vector3.Lerp(transform.position,objectInHand.transform.position, 0.8f);
         var joint = AddFixedJoint();
         joint.connectedBody = objectInHand.GetComponent<Rigidbody>();
-
-        //FixedJoint j = objectInHand.GetComponent<FixedJoint>();
-        //if (j != null)  
-        //{
-        //    Destroy(j);
-        //}
     }
 
     private FixedJoint AddFixedJoint()

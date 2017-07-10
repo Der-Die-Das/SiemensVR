@@ -44,7 +44,6 @@ public class VRButton : MonoBehaviour
         if (buttonPressed != null)
         {
             buttonPressed.Invoke(value);
-            Debug.Log(gameObject.name + " button Pressed with value " + value);
         }
         anim.SetTrigger("Press");
     }

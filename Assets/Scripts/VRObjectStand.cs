@@ -32,7 +32,7 @@ public class VRObjectStand : MonoBehaviour
             item.ObjectReleased += OnControllerDropObject;
         }
         ejectButton.buttonPressed += OnEject;
-     
+
     }
 
     // Update is called once per frame
@@ -43,14 +43,17 @@ public class VRObjectStand : MonoBehaviour
 
     private void OnEject(int no)
     {
-        Destroy(gameObject.GetComponent<Joint>());
-        keycardIn.GetComponent<Rigidbody>().AddForce(transform.forward* ejectForce);
+        if (keycardIn != null)
+        {
+            Destroy(gameObject.GetComponent<Joint>());
+            keycardIn.GetComponent<Rigidbody>().AddForce(transform.forward * ejectForce);
+        }
     }
 
     private void OnControllerDropObject(GameObject obj)
     {
         Keycard card = obj.GetComponent<Keycard>();
-        if (card == objectInRange)
+        if (card != null && card == objectInRange)
         {
             keycardIn = card;
             if (keycardInserted != null)
@@ -63,7 +66,7 @@ public class VRObjectStand : MonoBehaviour
                 fx.breakForce = 5000;
                 fx.breakTorque = 5000;
                 fx.connectedBody = card.GetComponent<Rigidbody>();
-                
+
             }
         }
     }

@@ -10,7 +10,7 @@ public class VROneAxisLever : MonoBehaviour
     {
         value = Mathf.RoundToInt(transform.localRotation.eulerAngles.x) - 270;
         
-        if (transform.localRotation.eulerAngles.y >= 179)
+        if (transform.localRotation.eulerAngles.y < 179)
         {
             value *= -1;
         }
