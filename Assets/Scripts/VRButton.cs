@@ -30,6 +30,11 @@ public class VRButton : MonoBehaviour
         anim.SetTrigger("Press");
     }
 
+    public void PressButton()
+    {
+        buttonPressed.Invoke(value);
+        anim.SetTrigger("Press");
+    }
     /// <summary>
     /// Gets called from the controller (ButtonInteract Script)
     /// </summary>

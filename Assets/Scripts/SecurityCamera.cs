@@ -6,21 +6,17 @@ using UnityEngine.UI;
 public class SecurityCamera : MonoBehaviour
 {
     public Camera renderCamera;
-    private Vector3 origPos;
+    public float maxZoom;
+    public float minZoom;
 
-    private void Awake()
+    private void Update()
     {
-        origPos = renderCamera.transform.position;
-    }
-
-    private void LateUpdate()
-    {
-        renderCamera.transform.position = origPos;
     }
 
     public void SetZoom(float zoom)
     {
         renderCamera.fieldOfView += zoom / 10f;
+        renderCamera.fieldOfView = Mathf.Clamp(renderCamera.fieldOfView, minZoom, maxZoom);
     }
     public void Rotate(Vector2 value)
     {
