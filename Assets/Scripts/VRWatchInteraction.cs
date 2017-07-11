@@ -17,14 +17,13 @@ public class VRWatchInteraction : VRInteraction
     public int normalSize;
     public int highlightedSize;
 
-
-
     protected override void Start()
     {
         base.Start();
         timeScript = GameObject.FindObjectOfType<VRTime>();
         watchOnController.SetActive(false);
         allParts = GetOrderedParts();
+        timeScript.timeChanged += OnTimeChanged;
     }
 
     protected override void Update()
@@ -63,7 +62,24 @@ public class VRWatchInteraction : VRInteraction
     private void ShowMenu()
     {
         watchOnController.SetActive(true);
-        SetPartToSelected(allParts[Mathf.FloorToInt(timeScript.Time) - 1]);
+        UpdateDisplay();
+    }
+
+    private void OnTimeChanged(float newTime)
+    {
+        UpdateDisplay();
+    }
+
+    private void UpdateDisplay()
+    {
+        foreach (var item in allParts)
+        {
+            StartCoroutine(SetPartToNormal(item));
+        }
+        if (Mathf.FloorToInt(timeScript.Time) - 1 >= 0 && Mathf.FloorToInt(timeScript.Time) - 1 < allParts.Length)
+        {
+            StartCoroutine(SetPartToSelected(allParts[Mathf.FloorToInt(timeScript.Time) - 1]));
+        }
     }
     private void HideMenu()
     {
@@ -73,9 +89,8 @@ public class VRWatchInteraction : VRInteraction
     {
         if (timeScript.Time != newTime)
         {
-            StartCoroutine(SetPartToNormal(allParts[Mathf.FloorToInt(timeScript.Time) - 1]));
             timeScript.Time = newTime;
-            StartCoroutine(SetPartToSelected(allParts[newTime - 1]));
+            UpdateDisplay();
         }
     }
     public void EditorWatchTriggered(VRWatch watch)

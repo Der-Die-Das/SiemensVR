@@ -28,12 +28,13 @@ public abstract class VRInteraction : MonoBehaviour
 
     protected virtual void Start()
     {
-        laser = Instantiate(laserPrefab);
+        laser = Instantiate(laserPrefab,transform);
         laserTransform = laser.transform;
     }
 
     protected virtual void Update()
     {
+        /*
         touchPadValue = Controller.GetAxis(touchpad);
         if (Controller.GetPressDown(menuButton))
         {
@@ -63,7 +64,7 @@ public abstract class VRInteraction : MonoBehaviour
                 Controller.TriggerHapticPulse(500);
             }
         }
-        
+        */
     }
 
     protected abstract void OnInteract(GameObject go);

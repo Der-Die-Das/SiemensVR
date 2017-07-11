@@ -5,6 +5,7 @@ public class VRTime : MonoBehaviour
 {
     public System.Action<float> timeChanged;
     public float secAmountForOneDay = 24;
+    public float tickSpeed = 1;
     private float _Time;
     public float Time
     {
@@ -14,13 +15,23 @@ public class VRTime : MonoBehaviour
         }
         set
         {
-            _Time = value;
+            if (value > 13)
+            {
+                _Time = (value % 12) + (value - 12);
+                isNight = !isNight;
+            }
+            else
+            {
+                _Time = value;
+            }
             if (timeChanged != null)
             {
                 timeChanged(_Time);
             }
         }
     }
+
+    private bool isNight = false;
 
     private void Start()
     {
@@ -32,8 +43,10 @@ public class VRTime : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSecondsRealtime(1);
-            Time += 24 / secAmountForOneDay;
+            yield return new WaitForSecondsRealtime(tickSpeed);
+            float addAmount = 24 / secAmountForOneDay* tickSpeed;
+
+            Time += addAmount;
         }
     }
 }
