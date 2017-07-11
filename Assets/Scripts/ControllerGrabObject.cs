@@ -90,7 +90,7 @@ public class ControllerGrabObject : MonoBehaviour
     {
         objectInHand = collidingObject;
         collidingObject = null;
-        objectInHand.transform.position = Vector3.Lerp(transform.position,objectInHand.transform.position, 0.8f);
+        //objectInHand.transform.position = Vector3.Lerp(transform.position,objectInHand.transform.position, 0.8f);
         var joint = AddFixedJoint();
         joint.connectedBody = objectInHand.GetComponent<Rigidbody>();
     }
