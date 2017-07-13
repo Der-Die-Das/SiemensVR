@@ -33,10 +33,10 @@ public class DoorCardReader : MonoBehaviour {
             lockflag = true;
         }
 
-            Debug.Log(relatedDoor.GetComponent<HingeJoint>().angle.ToString());
+            //Debug.Log(relatedDoor.GetComponent<HingeJoint>().angle.ToString());
         if(relatedDoor.GetComponent<HingeJoint>().angle >= 0 && lockflag)
         {
-            Debug.Log("Should Lock Door");
+            //Debug.Log("Should Lock Door");
             LockRelatedDoor();
             lockflag = false;
         }
