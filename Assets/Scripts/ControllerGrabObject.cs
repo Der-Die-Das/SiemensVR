@@ -85,24 +85,19 @@ public class ControllerGrabObject : MonoBehaviour
             }
         }
 
-        if (objectInHand)
+        if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Grip))
         {
-            if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Grip))
+            if(objectInHand.GetComponent<Lighter>())
             {
-                Lighter lighter = objectInHand.GetComponent<Lighter>();
-                if (lighter != null)
-                {
-                    lighter.StartFire();
-                }
+                objectInHand.GetComponent<Lighter>().StartFire();
             }
+        }
 
-            if (Controller.GetPressUp(SteamVR_Controller.ButtonMask.Grip))
+        if (Controller.GetPressUp(SteamVR_Controller.ButtonMask.Grip))
+        {
+            if (objectInHand.GetComponent<Lighter>())
             {
-                Lighter lighter = objectInHand.GetComponent<Lighter>();
-                if (lighter != null)
-                {
-                    lighter.StopFire();
-                }
+                objectInHand.GetComponent<Lighter>().StopFire();
             }
         }
     }
