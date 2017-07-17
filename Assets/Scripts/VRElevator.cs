@@ -24,8 +24,8 @@ public class VRElevator : MonoBehaviour
         elevatorContent = new List<GameObject>();
         allElevators = GameObject.FindObjectsOfType<VRElevator>();
 
-        doorSensor.triggerEnter += OnSensorEnter;
-        doorSensor.triggerLeave += OnSensorLeave;
+        //doorSensor.triggerEnter += OnSensorEnter;
+        //doorSensor.triggerLeave += OnSensorLeave;
 
         foreach (var item in buttons)
         {

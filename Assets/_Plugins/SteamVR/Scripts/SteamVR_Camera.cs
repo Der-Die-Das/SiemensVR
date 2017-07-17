@@ -182,7 +182,7 @@ public class SteamVR_Camera : MonoBehaviour
 			head.tag = tag;
 
 			var camera = head.GetComponent<Camera>();
-			camera.clearFlags = CameraClearFlags.Nothing;
+			//camera.clearFlags = CameraClearFlags.Nothing;
 			camera.cullingMask = 0;
 			camera.eventMask = 0;
 			camera.orthographic = true;
