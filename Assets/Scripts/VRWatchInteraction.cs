@@ -1,111 +1,58 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class VRWatchInteraction : VRInteraction
 {
-    public GameObject watchOnController;
-    public float FadeSpeed = 1;
-
-    private VRTime timeScript;
-    private GameObject[] allParts;
+    public VRWatchInteractionProperties properties;
     [HideInInspector]
-    public VRWatch interactingWatch;
+    public Valve.VR.EVRButtonId gripButton = Valve.VR.EVRButtonId.k_EButton_Grip;
+    public Action updateDisplay;
 
-    public Material normalMaterial;
-    public Material highlightedMaterial;
-    public int normalSize;
-    public int highlightedSize;
+
+    [HideInInspector]
+    public GameObject watch;
+    [HideInInspector]
+    public GameObject[] allParts;
+    [HideInInspector]
+    public bool isWatchOnFront = true;
+
+    private bool isSwitchingSide = false;
+    private Transform head;
 
     protected override void Start()
     {
         base.Start();
-        timeScript = GameObject.FindObjectOfType<VRTime>();
-        watchOnController.SetActive(false);
+        head = GameObject.FindObjectOfType<SteamVR_Camera>().transform;
+        watch = Instantiate(properties.watchPrefab, transform);
+        watch.SetActive(false);
         allParts = GetOrderedParts();
-        timeScript.timeChanged += OnTimeChanged;
     }
 
     protected override void Update()
     {
         base.Update();
-
-        if (!shouldInteract)
+        if (interactingWith)
         {
-            if (Controller.GetPressUp(menuButton))
+            if (Controller.GetPressDown(gripButton))
             {
-                shouldInteract = true;
-                HideMenu();
-            }
-            int time = getTimeByVector(touchPadValue);
-            if (time != 0)
-            {
-                SetTime(time);
+                StartCoroutine(SwitchSide());
             }
         }
+        watch.transform.LookAt(head);
     }
 
-    protected override void OnInteract(GameObject go)
+    public void ShowWatch()
     {
-        interactingWatch = go.GetComponent<VRWatch>();
-        if (interactingWatch)
-        {
-            shouldInteract = false;
-            ShowMenu();
-        }
-        else
-        {
-            Controller.TriggerHapticPulse(500);
-        }
+        watch.SetActive(true);
+        updateDisplay();
+    }
+    public void HideWatch()
+    {
+        watch.SetActive(false);
     }
 
-    private void ShowMenu()
-    {
-        watchOnController.SetActive(true);
-        UpdateDisplay();
-    }
-
-    private void OnTimeChanged(float newTime)
-    {
-        UpdateDisplay();
-    }
-
-    private void UpdateDisplay()
-    {
-        foreach (var item in allParts)
-        {
-            StartCoroutine(SetPartToNormal(item));
-        }
-        if (Mathf.FloorToInt(timeScript.Time) - 1 >= 0 && Mathf.FloorToInt(timeScript.Time) - 1 < allParts.Length)
-        {
-            StartCoroutine(SetPartToSelected(allParts[Mathf.FloorToInt(timeScript.Time) - 1]));
-        }
-    }
-    private void HideMenu()
-    {
-        watchOnController.SetActive(false);
-    }
-    public void SetTime(int newTime)
-    {
-        if (timeScript.Time != newTime)
-        {
-            timeScript.Time = newTime;
-            UpdateDisplay();
-        }
-    }
-    public void EditorWatchTriggered(VRWatch watch)
-    {
-        if (interactingWatch != null)
-        {
-            interactingWatch = null;
-            HideMenu();
-        }
-        else
-        {
-            interactingWatch = watch;
-            ShowMenu();
-        }
-    }
     public int getTimeByVector(Vector2 vec)
     {
         if (vec == Vector2.zero)
@@ -117,26 +64,30 @@ public class VRWatchInteraction : VRInteraction
         Vector3 upward = new Vector3(0, 1, 0);
         Vector3 rotation = Quaternion.LookRotation(forward, upward).eulerAngles;
 
-
-        return Mathf.FloorToInt(rotation.y / 30f);
+        int returnValue = Mathf.FloorToInt(rotation.y / 30f);
+        if (returnValue == 0)
+        {
+            return 12;
+        }
+        return returnValue;
     }
-    private IEnumerator SetPartToNormal(GameObject part)
+    public IEnumerator SetPartToNormal(GameObject part)
     {
         MeshRenderer rend = part.GetComponent<MeshRenderer>();
-        rend.material = normalMaterial;
-        while (part.transform.localScale.x > normalSize)
+        rend.material = properties.normalMaterial;
+        while (part.transform.localScale.x > properties.normalSize)
         {
-            part.transform.localScale = part.transform.localScale - Vector3.one * FadeSpeed;
+            part.transform.localScale = part.transform.localScale - Vector3.one * properties.FadeSpeed;
             yield return 0;
         }
     }
-    private IEnumerator SetPartToSelected(GameObject part)
+    public IEnumerator SetPartToSelected(GameObject part)
     {
         MeshRenderer rend = part.GetComponent<MeshRenderer>();
-        rend.material = highlightedMaterial;
-        while (part.transform.localScale.x < highlightedSize)
+        rend.material = properties.highlightedMaterial;
+        while (part.transform.localScale.x < properties.highlightedSize)
         {
-            part.transform.localScale = part.transform.localScale + Vector3.one * FadeSpeed;
+            part.transform.localScale = part.transform.localScale + Vector3.one * properties.FadeSpeed;
             yield return 0;
         }
     }
@@ -145,8 +96,47 @@ public class VRWatchInteraction : VRInteraction
         GameObject[] parts = new GameObject[12];
         for (int i = 0; i < parts.Length; i++)
         {
-            parts[i] = watchOnController.transform.FindChild("Part" + (i + 1)).gameObject;
+            parts[i] = watch.transform.GetChild(0).Find("Part" + (i + 1)).gameObject;
         }
         return parts;
     }
+
+    public IEnumerator SwitchSide()
+    {
+        if (isSwitchingSide)
+        {
+            yield break;
+        }
+        updateDisplay();
+        isWatchOnFront = !isWatchOnFront;
+        isSwitchingSide = true;
+        Transform child = watch.transform.GetChild(0);
+        Vector3 oldRot = child.localRotation.eulerAngles;
+        Vector3 targetRot = oldRot;
+        targetRot.z += 180;
+        while (child.transform.localRotation != Quaternion.Euler(targetRot))
+        {
+            child.transform.localRotation = Quaternion.RotateTowards(child.transform.localRotation, Quaternion.Euler(targetRot), properties.TurnSpeed);
+            yield return 0;
+        }
+        isSwitchingSide = false;
+    }
+    public GameObject getCorrectPart(int time)
+    {
+        int newTime = time;
+        if (newTime > 12)
+        {
+            newTime -= 12;
+        }
+        if (isWatchOnFront)
+        {
+            return allParts[newTime - 1];
+        }
+        else
+        {
+            return allParts[12 - newTime];
+        }
+    }
+
+
 }

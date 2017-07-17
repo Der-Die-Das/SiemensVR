@@ -1,25 +1,35 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System;
 using UnityEngine;
 
 public abstract class VRInteraction : MonoBehaviour
 {
     //controller stuff
     private SteamVR_TrackedObject trackedObj;
-    protected SteamVR_Controller.Device Controller;
-    //{
-    //    get { return SteamVR_Controller.Input((int)trackedObj.index); }
-    //}
-    protected Valve.VR.EVRButtonId menuButton = Valve.VR.EVRButtonId.k_EButton_ApplicationMenu;
-    protected Valve.VR.EVRButtonId touchpad  = Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad;
-    protected Vector2 touchPadValue;
+    public SteamVR_Controller.Device Controller
+    {
+        get { return SteamVR_Controller.Input((int) trackedObj.index); }
+    }
+    [HideInInspector]
+    public Valve.VR.EVRButtonId menuButton = Valve.VR.EVRButtonId.k_EButton_ApplicationMenu;
+    [HideInInspector]
+    public Valve.VR.EVRButtonId touchpad  = Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad;
+    [HideInInspector]
+    public Vector2 touchPadValue;
 
-    
+    public Action<GameObject> onInteract;
+
     public GameObject laserPrefab; // The laser prefab
     private GameObject laser; // A reference to the spawned laser
     private Transform laserTransform; // The transform component of the laser for ease of use
 
-    protected bool shouldInteract = true;
+    public VRInteraction otherInteractor;
+
+    [HideInInspector]
+    //public bool shouldInteract = true;
+    public VRInteractionType interactingWith;
 
     void Awake()
     {
@@ -30,43 +40,54 @@ public abstract class VRInteraction : MonoBehaviour
     {
         laser = Instantiate(laserPrefab,transform);
         laserTransform = laser.transform;
+        laser.SetActive(false);
+
+        otherInteractor = GameObject.FindObjectsOfType<VRInteraction>().ToList<VRInteraction>().Where(x => x != this).First();
     }
+
 
     protected virtual void Update()
     {
-        /*
         touchPadValue = Controller.GetAxis(touchpad);
-        if (Controller.GetPressDown(menuButton))
+        if (!otherInteractor.interactingWith)
         {
-            RaycastHit hit;
-
-            // Send out a raycast from the controller
-            if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 100))
+            if (Controller.GetPress(menuButton))
             {
-                laser.SetActive(true); //Show the laser
-                laserTransform.position = Vector3.Lerp(trackedObj.transform.position, hit.point, .5f); // Move laser to the middle between the controller and the position the raycast hit
-                laserTransform.LookAt(hit.point); // Rotate laser facing the hit point
-                laserTransform.localScale = new Vector3(laserTransform.localScale.x, laserTransform.localScale.y,
-                    hit.distance); // Scale laser so it fits exactly between the controller & the hit point
+                RaycastHit hit;
+
+                // Send out a raycast from the controller
+                if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 10000))
+                {
+                    laser.SetActive(true); //Show the laser
+                    laserTransform.position = Vector3.Lerp(trackedObj.transform.position, hit.point, .5f); // Move laser to the middle between the controller and the position the raycast hit
+                    laserTransform.LookAt(hit.point); // Rotate laser facing the hit point
+                    laserTransform.localScale = new Vector3(laserTransform.localScale.x, laserTransform.localScale.y,
+                        hit.distance * 1.333f); // Scale laser so it fits exactly between the controller & the hit point
+                }
+                else
+                {
+                    laser.SetActive(false);
+                }
+            }
+            if (Controller.GetPressUp(menuButton))
+            {
+                RaycastHit hit;
+
+                // Send out a raycast from the controller
+                if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 10000))
+                {
+                    onInteract(hit.collider.gameObject);
+                }
+                else
+                {
+                    Controller.TriggerHapticPulse(3000);
+                }
+                    laser.SetActive(false);
+
             }
         }
-        if (Controller.GetPressUp(menuButton))
-        {
-            RaycastHit hit;
-
-            // Send out a raycast from the controller
-            if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 100))
-            {
-                OnInteract(hit.collider.gameObject);
-            }
-            else
-            {
-                Controller.TriggerHapticPulse(500);
-            }
-        }
-        */
+        
     }
 
-    protected abstract void OnInteract(GameObject go);
 
 }
