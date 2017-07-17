@@ -10,13 +10,16 @@ public class VRLightInteraction : VRInteractionType
     VRLight interactingLight;
     VRLightInteraction otherLightInteractor;
 
+    GameObject OnOffTimeObject;
+
     private bool interactedThisFrame = false;
 
 
     protected override void Start()
     {
         base.Start();
-        Instantiate(accordingTimePrefab, ((VRWatchInteraction)vrInteraction).watch.transform, false); 
+        OnOffTimeObject = (GameObject)Instantiate(accordingTimePrefab, ((VRWatchInteraction)vrInteraction).watch.transform, false);
+        OnOffTimeObject.SetActive(false);
         vrInteraction = GetComponent<VRWatchInteraction>();
         otherLightInteractor = vrInteraction.otherInteractor.GetComponent<VRLightInteraction>();
         ((VRWatchInteraction)vrInteraction).onInteract += OnInteract;
@@ -36,6 +39,8 @@ public class VRLightInteraction : VRInteractionType
                     vrInteraction.otherInteractor.interactingWith = null;
                     ((VRWatchInteraction)vrInteraction).HideWatch();
                     ((VRWatchInteraction)otherLightInteractor.vrInteraction).HideWatch();
+                    OnOffTimeObject.SetActive(false);
+                    otherLightInteractor.OnOffTimeObject.SetActive(false);
                 }
             }
             else
@@ -78,6 +83,8 @@ public class VRLightInteraction : VRInteractionType
             vrInteraction.interactingWith = this;
             otherLightInteractor.vrInteraction.interactingWith = this;
             interactedThisFrame = true;
+            OnOffTimeObject.SetActive(true);
+            otherLightInteractor.OnOffTimeObject.SetActive(true);
         }
         else
         {

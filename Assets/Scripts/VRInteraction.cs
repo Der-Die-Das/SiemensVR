@@ -11,7 +11,10 @@ public abstract class VRInteraction : MonoBehaviour
     public SteamVR_Controller.Device Controller
     {
         get { return SteamVR_Controller.Input((int) trackedObj.index); }
+
     }
+    [HideInInspector]
+    public Valve.VR.EVRButtonId gripButton = Valve.VR.EVRButtonId.k_EButton_Grip;
     [HideInInspector]
     public Valve.VR.EVRButtonId menuButton = Valve.VR.EVRButtonId.k_EButton_ApplicationMenu;
     [HideInInspector]
