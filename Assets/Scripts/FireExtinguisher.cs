@@ -8,7 +8,6 @@ public class FireExtinguisher : MonoBehaviour {
     public int firesNeededToActivate;
     public float durationInSeconds;
     private bool activated = true;
-    private int fireCounter = 0;
 
 
 	// Use this for initialization
@@ -23,7 +22,8 @@ public class FireExtinguisher : MonoBehaviour {
 
     public void SetActivated(bool pactivated)
     {
-        activated = pactivated; 
+        activated = pactivated;
+        checkForFireAndExtinguishThem();
     }
 
     public bool GetActivated()
@@ -43,33 +43,42 @@ public class FireExtinguisher : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other)
     {
-        //if(activated)
-        //if (other.gameObject.GetComponent<Fire>())
-        //{
-        //    fireCounter++;
-
-        //    if(fireCounter == firesNeededToActivate)
-        //    {
-        //        StartExtinguishFire();
-        //    }
-        //}
         Fire fire = other.gameObject.GetComponent<Fire>();
         if (fire && !fire.GetComponentInParent<Lighter>())
         {
             firesToExtinguish.Add(fire);
-            fireCounter++;
+            checkForFireAndExtinguishThem();
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        Fire fire = other.gameObject.GetComponent<Fire>();
+        if (firesToExtinguish.Contains(fire))
+        {
+            firesToExtinguish.Remove(fire);
+        }
+    }
 
-            if(fireCounter >= firesNeededToActivate)
+    private void OnTriggerStay(Collider other)
+    {
+        Fire fire = other.gameObject.GetComponent<Fire>();
+        if (fire && !fire.GetComponentInParent<Lighter>() && !firesToExtinguish.Contains(fire))
+        {
+            checkForFireAndExtinguishThem();
+        }
+    }
+
+    private void checkForFireAndExtinguishThem()
+    {
+        if (firesToExtinguish.Count >= firesNeededToActivate && activated)
+        {
+            StartExtinguishFire();
+            foreach (Fire item in firesToExtinguish)
             {
-                StartExtinguishFire();
-                foreach (Fire item in firesToExtinguish)
-                {
-                    if(item != null)
-                        Destroy(item.gameObject);
-                }
-                fireCounter = 0;
-                StartCoroutine(WaitAndStopParticleSystem());
+                if (item != null)
+                    Destroy(item.gameObject);
             }
+            StartCoroutine(WaitAndStopParticleSystem());
         }
     }
 

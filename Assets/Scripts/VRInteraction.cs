@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using UnityEngine;
 
 public abstract class VRInteraction : MonoBehaviour
@@ -9,12 +10,12 @@ public abstract class VRInteraction : MonoBehaviour
     private SteamVR_TrackedObject trackedObj;
     public SteamVR_Controller.Device Controller
     {
-        get { return SteamVR_Controller.Input((int) trackedObj.index); }
+        get { return SteamVR_Controller.Input((int)trackedObj.index); }
     }
     [HideInInspector]
     public Valve.VR.EVRButtonId menuButton = Valve.VR.EVRButtonId.k_EButton_ApplicationMenu;
     [HideInInspector]
-    public Valve.VR.EVRButtonId touchpad  = Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad;
+    public Valve.VR.EVRButtonId touchpad = Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad;
     [HideInInspector]
     public Valve.VR.EVRButtonId gripButton = Valve.VR.EVRButtonId.k_EButton_Grip;
     [HideInInspector]
@@ -26,8 +27,23 @@ public abstract class VRInteraction : MonoBehaviour
     private GameObject laser; // A reference to the spawned laser
     private Transform laserTransform; // The transform component of the laser for ease of use
 
+    private VRInteraction _otherInteractor;
     [HideInInspector]
-    public VRInteraction otherInteractor;
+    public VRInteraction otherInteractor
+    {
+        get
+        {
+            if (_otherInteractor == null)
+            {
+                _otherInteractor = getOtherInteractor();
+            }
+            return _otherInteractor;
+        }
+        set
+        {
+            _otherInteractor = value;
+        }
+    }
 
     [HideInInspector]
     //public bool shouldInteract = true;
@@ -40,13 +56,25 @@ public abstract class VRInteraction : MonoBehaviour
 
     protected virtual void Start()
     {
-        laser = Instantiate(laserPrefab,transform);
+        laser = Instantiate(laserPrefab, transform);
         laserTransform = laser.transform;
         laser.SetActive(false);
-
         
+
     }
 
+    private VRInteraction getOtherInteractor()
+    {
+        VRInteraction[] allInteractors = GameObject.FindObjectsOfType<VRInteraction>();
+        foreach (var item in allInteractors)
+        {
+            if (item.name != this.name)
+            {
+                return item;
+            }
+        }
+        throw new Exception("Controller not found.");
+    }
 
     protected virtual void Update()
     {
@@ -84,11 +112,11 @@ public abstract class VRInteraction : MonoBehaviour
                 {
                     Controller.TriggerHapticPulse(3000);
                 }
-                    laser.SetActive(false);
+                laser.SetActive(false);
 
             }
         }
-        
+
     }
 
 
