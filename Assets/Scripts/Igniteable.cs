@@ -31,6 +31,7 @@ public class Igniteable : MonoBehaviour
             fire.GetComponent<BoxCollider>().size = new Vector3(fire.GetComponent<BoxCollider>().size.x / (transform.localScale.x * BoxColliderResizeFactor), fire.GetComponent<BoxCollider>().size.y / (transform.localScale.y * BoxColliderResizeFactor), fire.GetComponent<BoxCollider>().size.z / (transform.localScale.z * BoxColliderResizeFactor));
             fire.GetComponent<BoxCollider>().center = Vector3.zero;
             fire.GetComponent<Fire>().lit = true;
+            fire.transform.Find("Light").localPosition = Vector3.zero;
             fire.Play();
             fires.Add(fire);
         }
