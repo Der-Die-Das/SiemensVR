@@ -6,15 +6,37 @@ public class Fire : MonoBehaviour {
     public bool lit = false;
     public GameObject raycastOrigin;
     private Quaternion rotation;
+    public Light flickeringLight;
+    public float minLightIntensity;
+    public float maxLightIntensity;
+    public float flickeringSpeed;
 
     private void Awake()
     {
         rotation = transform.rotation;
     }
 
+    private void Start()
+    {
+        StartCoroutine(Flickering());
+    }
+
     private void LateUpdate()
     {
         transform.rotation = rotation;
+    }
+
+    private IEnumerator Flickering()
+    {
+        while (true)
+        {
+            if (lit)
+            {
+                flickeringLight.intensity = Random.Range(minLightIntensity, maxLightIntensity);
+            }
+            yield return new WaitForSeconds(1f / flickeringSpeed);
+
+        }
     }
 
     private void OnTriggerEnter(Collider other)
