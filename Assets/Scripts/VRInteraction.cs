@@ -18,6 +18,8 @@ public abstract class VRInteraction : MonoBehaviour
     public Valve.VR.EVRButtonId touchpad  = Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad;
     [HideInInspector]
     public Vector2 touchPadValue;
+    [HideInInspector]
+    public Valve.VR.EVRButtonId gripButton = Valve.VR.EVRButtonId.k_EButton_Grip;
 
     public Action<GameObject> onInteract;
 

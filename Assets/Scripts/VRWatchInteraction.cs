@@ -6,8 +6,6 @@ using UnityEngine;
 public class VRWatchInteraction : VRInteraction
 {
     public VRWatchInteractionProperties properties;
-    [HideInInspector]
-    public Valve.VR.EVRButtonId gripButton = Valve.VR.EVRButtonId.k_EButton_Grip;
     public Action updateDisplay;
 
 

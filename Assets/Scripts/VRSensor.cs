@@ -9,11 +9,17 @@ public class VRSensor : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        triggerEnter(other.gameObject);
+        if (triggerEnter != null)
+        {
+            triggerEnter(other.gameObject);
+        }
 
     }
     private void OnTriggerExit(Collider other)
     {
-        triggerLeave(other.gameObject);
+        if (triggerLeave != null)
+        {
+            triggerLeave(other.gameObject);
+        }
     }
 }

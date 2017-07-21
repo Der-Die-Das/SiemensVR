@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Lighter : MonoBehaviour {
     public ParticleSystem fire;
+    public GameObject light;
 
 	// Use this for initialization
 	void Start () {
@@ -19,11 +20,13 @@ public class Lighter : MonoBehaviour {
     {
         fire.Play();
         fire.GetComponent<Fire>().lit = true;
+        light.SetActive(true);
     }
 
     public void StopFire()
     {
         fire.Stop();
         fire.GetComponent<Fire>().lit = false;
+        light.SetActive(false);
     }
 }

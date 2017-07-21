@@ -10,6 +10,8 @@ public class Fire : MonoBehaviour {
     public float minLightIntensity;
     public float maxLightIntensity;
     public float flickeringSpeed;
+    public System.Action<Fire> extinguished;
+    private Igniteable objectTryingToIgnite;
 
     private void Awake()
     {
@@ -39,30 +41,31 @@ public class Fire : MonoBehaviour {
         }
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        Igniteable igniteableObject = other.GetComponent<Igniteable>();
-        if (igniteableObject && lit)
-        {
-            RaycastHit hit;
-            if(Physics.Raycast(raycastOrigin.transform.position, other.transform.position - raycastOrigin.transform.position, out hit))
-            {
-                igniteableObject.Ignite(hit.point);
-            }
-            
-        }
-    }
     private void OnTriggerStay(Collider other)
     {
         Igniteable igniteableObject = other.GetComponent<Igniteable>();
-        if (igniteableObject && lit)
+        if (igniteableObject && lit && (ReferenceEquals(igniteableObject, null) || !ReferenceEquals(igniteableObject, objectTryingToIgnite)))
         {
             RaycastHit hit;
             if (Physics.Raycast(raycastOrigin.transform.position, other.transform.position - raycastOrigin.transform.position, out hit))
             {
                 igniteableObject.Ignite(hit.point);
+                objectTryingToIgnite = igniteableObject;
             }
-
         }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if(!ReferenceEquals(objectTryingToIgnite, null))
+        {
+            objectTryingToIgnite = null;
+        }
+    }
+
+    public void Extinguish()
+    {
+        if (extinguished != null)
+            extinguished(this);
     }
 }
