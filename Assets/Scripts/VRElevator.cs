@@ -33,7 +33,7 @@ public class VRElevator : MonoBehaviour
         }
     }
 
-    private void OnSensorEnter(GameObject other)
+    private void OnSensorEnter(Collider other)
     {
         if (other.GetComponent<SteamVR_Camera>())
         {
@@ -41,7 +41,7 @@ public class VRElevator : MonoBehaviour
         }
     }
 
-    private void OnSensorLeave(GameObject other)
+    private void OnSensorLeave(Collider other)
     {
         if (other.GetComponent<SteamVR_Camera>())
         {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class Topic
+public class TopicInfo
 {
     public Texture Icon;
     public string Title;

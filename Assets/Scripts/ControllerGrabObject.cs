@@ -141,4 +141,11 @@ public class ControllerGrabObject : MonoBehaviour
         }
         objectInHand = null;
     }
+
+    public void ForceGrab(GameObject go)
+    {
+        ReleaseObject();
+        collidingObject = go;
+        GrabObject();
+    }
 }
