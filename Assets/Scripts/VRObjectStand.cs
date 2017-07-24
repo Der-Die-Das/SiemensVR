@@ -47,6 +47,7 @@ public class VRObjectStand : MonoBehaviour
     private void OnControllerDropObject(GameObject obj)
     {
         Keycard card = obj.GetComponent<Keycard>();
+
         if (card != null && card == objectInRange)
         {
             keycardIn = card;

@@ -6,6 +6,8 @@ using UnityEngine;
 public class VRWatchInteraction : VRInteraction
 {
     public VRWatchInteractionProperties properties;
+    
+    [HideInInspector]
     public Action updateDisplay;
 
 

@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
-public class VRLight : MonoBehaviour
+public class VRLight : TutorialInteractable
 {
     public Light controlledLight;
     private float defaultIntensity;
@@ -42,6 +43,14 @@ public class VRLight : MonoBehaviour
         }
     }
 
+    private Action Interacted; //gets called from the interactor 
+    private Action SideChanged; //gets called from the interactor 
+    private Action TimeSet; //gets called from the interactor 
+
+    private void Awake()
+    {
+        taskCompleted = new Action[] { Interacted, SideChanged, TimeSet };
+    }
     private void Start()
     {
         _StartTime = 1;
@@ -61,7 +70,10 @@ public class VRLight : MonoBehaviour
     {
         if ((time.Time > _StartTime && time.Time < _EndTime) || _StartTime == _EndTime || (_StartTime > _EndTime && (time.Time >= _StartTime || time.Time <= _EndTime)))
         {
-            controlledLight.intensity = defaultIntensity;
+            if (controlledLight != null)
+            {
+                controlledLight.intensity = defaultIntensity;
+            }
         }
         else
         {

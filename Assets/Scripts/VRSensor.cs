@@ -1,17 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
+[RequireComponent(typeof(Collider))]
 public class VRSensor : MonoBehaviour
 {
-    public System.Action<GameObject> triggerEnter;
-    public System.Action<GameObject> triggerLeave;
+    public Action<Collider> triggerEnter;
+    public Action<Collider> triggerLeave;
+    public Action<Collision> collisionEnter;
+    public Action<Collision> collisionLeave;
 
     private void OnTriggerEnter(Collider other)
     {
         if (triggerEnter != null)
         {
-            triggerEnter(other.gameObject);
+            triggerEnter(other);
         }
 
     }
@@ -19,7 +23,22 @@ public class VRSensor : MonoBehaviour
     {
         if (triggerLeave != null)
         {
-            triggerLeave(other.gameObject);
+            triggerLeave(other);
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collisionEnter != null)
+        {
+            collisionEnter(collision);
+        }
+    }
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collisionLeave != null)
+        {
+            collisionLeave(collision);
         }
     }
 }

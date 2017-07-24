@@ -10,12 +10,15 @@ public abstract class VRInteraction : MonoBehaviour
     private SteamVR_TrackedObject trackedObj;
     public SteamVR_Controller.Device Controller
     {
-        get { return SteamVR_Controller.Input((int) trackedObj.index); }
+        get { return SteamVR_Controller.Input((int)trackedObj.index); }
+
     }
+    [HideInInspector]
+    public Valve.VR.EVRButtonId gripButton = Valve.VR.EVRButtonId.k_EButton_Grip;
     [HideInInspector]
     public Valve.VR.EVRButtonId menuButton = Valve.VR.EVRButtonId.k_EButton_ApplicationMenu;
     [HideInInspector]
-    public Valve.VR.EVRButtonId touchpad  = Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad;
+    public Valve.VR.EVRButtonId touchpad = Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad;
     [HideInInspector]
     public Vector2 touchPadValue;
     [HideInInspector]
@@ -29,6 +32,7 @@ public abstract class VRInteraction : MonoBehaviour
 
     public VRInteraction otherInteractor;
 
+
     [HideInInspector]
     //public bool shouldInteract = true;
     public VRInteractionType interactingWith;
@@ -40,11 +44,20 @@ public abstract class VRInteraction : MonoBehaviour
 
     protected virtual void Start()
     {
-        laser = Instantiate(laserPrefab,transform);
+        laser = Instantiate(laserPrefab, transform);
         laserTransform = laser.transform;
         laser.SetActive(false);
 
-        otherInteractor = GameObject.FindObjectsOfType<VRInteraction>().ToList<VRInteraction>().Where(x => x != this).First();
+        //otherInteractor = .ToList<VRInteraction>().Where(x => x != this).First();
+        var a = GameObject.FindObjectsOfType<VRInteraction>();
+        foreach (var item in a)
+        {
+            if (item != this)
+            {
+                otherInteractor = item;
+                break;
+            }
+        }
     }
 
 
@@ -84,11 +97,11 @@ public abstract class VRInteraction : MonoBehaviour
                 {
                     Controller.TriggerHapticPulse(3000);
                 }
-                    laser.SetActive(false);
+                laser.SetActive(false);
 
             }
         }
-        
+
     }
 
 

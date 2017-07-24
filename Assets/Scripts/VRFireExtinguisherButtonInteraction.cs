@@ -14,6 +14,7 @@ public class VRFireExtinguisherButtonInteraction : VRInteraction {
     private Transform head;
     private bool isOn = false;
 
+
     // Use this for initialization
     protected override void Start () {
         base.Start();
