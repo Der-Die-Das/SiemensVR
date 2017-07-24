@@ -33,9 +33,23 @@ public class VRClockInteraction : VRInteractionType
                 else
                 {
                     interactedThisFrame = !interactedThisFrame;
+                    //notification for tutorial
+                    if (interactingClock.taskCompleted[0] != null)
+                    {
+                        interactingClock.taskCompleted[0].Invoke();
+                    }
                 }
 
             }
+            if (vrInteraction.Controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_Grip))
+            {
+                //notification for tutorial
+                if (interactingClock.taskCompleted[1] != null)
+                {
+                    interactingClock.taskCompleted[1].Invoke();
+                }
+            }
+
             int time = ((VRWatchInteraction)vrInteraction).getTimeByVector(vrInteraction.touchPadValue);
             if (time != 0 && Mathf.Floor(time) != Mathf.Floor(timeScript.Time))
             {
@@ -87,6 +101,12 @@ public class VRClockInteraction : VRInteractionType
             timeScript.Time = newTime + f;
             timeScript.isNight = !((VRWatchInteraction)vrInteraction).isWatchOnFront;
             UpdateDisplay();
+
+            //notification for tutorial
+            if (interactingClock.taskCompleted[2] != null)
+            {
+                interactingClock.taskCompleted[2].Invoke();
+            }
         }
     }
     

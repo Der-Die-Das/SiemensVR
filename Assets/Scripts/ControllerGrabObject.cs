@@ -23,7 +23,7 @@ public class ControllerGrabObject : MonoBehaviour
     /// </summary>
     private GameObject objectInHand;
 
-    private SteamVR_Controller.Device Controller
+    public SteamVR_Controller.Device Controller
     {
         get { return SteamVR_Controller.Input((int)trackedObj.index); }
     }
@@ -127,6 +127,9 @@ public class ControllerGrabObject : MonoBehaviour
 
     private void ReleaseObject()
     {
+        if (objectInHand == null)
+            return;
+
         if (GetComponent<FixedJoint>())
         {
             GetComponent<FixedJoint>().connectedBody = null;

@@ -15,8 +15,11 @@ public abstract class TutorialSection : MonoBehaviour
     public GameObject[] borders;
 
     [Header("UI Stuff")]
+    [HideInInspector]
     public Text title;
+    [HideInInspector]
     public Text description;
+    [HideInInspector]
     public RawImage image;
 
     private ScreenHoverBehaviour screenHover;
@@ -30,10 +33,10 @@ public abstract class TutorialSection : MonoBehaviour
     // Use this for initialization
     protected virtual void Start()
     {
-        StartTutorial();
+        //StartTutorial();
     }
 
-    protected abstract void TaskNeedsVerification(); //in subclass check if correct interaction then call base.NextTask() esle do nothing
+    protected abstract void TaskNeedsVerification(); //in subclass check if correct interaction then call base.NextTask() else do nothing
 
     protected void NextTask()
     {
@@ -89,7 +92,7 @@ public abstract class TutorialSection : MonoBehaviour
         screenHover = go.GetComponentInChildren<ScreenHoverBehaviour>();
 
         image = GameObject.Find("TutorialImage").GetComponent<RawImage>();
-        description = GameObject.Find("description").GetComponent<Text>();
+        description = GameObject.Find("description").GetComponent<Text>(); //very awful (:
         title = GameObject.Find("Title").GetComponent<Text>();
 
         UpdateDisplay();
@@ -101,14 +104,14 @@ public abstract class TutorialSection : MonoBehaviour
     {
         if (activeTask != null)
         {
-            if (instanceOfObject.TaskCompleted[activeTask.eventIndex] != null)
+            if (instanceOfObject.taskCompleted[activeTask.eventIndex] != null)
             {
-                instanceOfObject.TaskCompleted[activeTask.eventIndex] -= TaskNeedsVerification;
+                instanceOfObject.taskCompleted[activeTask.eventIndex] -= TaskNeedsVerification;
             }
         }
 
         activeTask = task;
-        instanceOfObject.TaskCompleted[activeTask.eventIndex] += TaskNeedsVerification;
+        instanceOfObject.taskCompleted[activeTask.eventIndex] += TaskNeedsVerification;
 
         UpdateDisplay();
     }
@@ -123,7 +126,8 @@ public abstract class TutorialSection : MonoBehaviour
         }
     }
 
-    protected void FinishTutorial()
+    [ContextMenu("finish")]
+    public void FinishTutorial()
     {
         screenHover.FlyAwayAndDestroy();
         objectHover.FlyAwayAndDestroy();

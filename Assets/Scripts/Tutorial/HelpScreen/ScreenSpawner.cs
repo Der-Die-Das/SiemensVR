@@ -16,6 +16,14 @@ public class ScreenSpawner : MonoBehaviour
         spawned = true;
         screen = Instantiate(screenPrefab).GetComponent<TutorialScreen>();
         screen.transform.position = transform.position + spawnOffset;
+
+        Vector3 rot = GameObject.FindObjectOfType<SteamVR_Camera>().transform.rotation.eulerAngles;
+
+        rot.x = 0;
+        rot.z = 0;
+        rot.y -= 90;
+
+        screen.transform.rotation = Quaternion.Euler(rot);
     }
 
     private void OnCollisionEnter(Collision collision)

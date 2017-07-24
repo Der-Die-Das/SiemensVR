@@ -30,4 +30,9 @@ public class ClockTutorial : TutorialSection
                 break;
         }
     }
+    [ContextMenu("finish")]
+    public void finish()
+    {
+        FinishTutorial();
+    }
 }

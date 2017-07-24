@@ -1,6 +1,7 @@
 ﻿using System;
+using UnityEngine;
 
-public interface TutorialInteractable
+public class TutorialInteractable : MonoBehaviour
 {
-    Action[] TaskCompleted { get; }
+    public Action[] taskCompleted;
 }

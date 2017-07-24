@@ -51,6 +51,7 @@ public class TutorialScreen : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        InteractWithHelpScreen.interactingHelpScreen = this;
         //instantiate topics
         allVRTopics = new List<VRTopic>();
         foreach (var item in allTopics)
@@ -136,7 +137,8 @@ public class TutorialScreen : MonoBehaviour
     private IEnumerator Despawn()
     {
         isDespawning = true;
-        
+        InteractWithHelpScreen.interactingHelpScreen = null;
+
 
         while (transform.localScale.x > smallSize)
         {
@@ -155,15 +157,19 @@ public class TutorialScreen : MonoBehaviour
 
     public Transform getUpperBorder()
     {
-        return transform.FindChild("Screen").FindChild("UpperTopicBorder");
+        return transform.Find("Screen").Find("UpperTopicBorder");
     }
     public Transform getLowerBorder()
     {
-        return transform.FindChild("Screen").FindChild("LowerTopicBorder");
+        return transform.Find("Screen").Find("LowerTopicBorder");
     }
     
     public void NotEnoughSpace(Collision go)
     {
+        if (go.collider.GetComponent<UITracked>())
+        {
+            return;
+        }
         StopAllCoroutines();
         StartCoroutine(Despawn());
     }

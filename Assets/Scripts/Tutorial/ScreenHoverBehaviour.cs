@@ -88,7 +88,7 @@ public class ScreenHoverBehaviour : MonoBehaviour
                 Destroy(item.gameObject);
             }
         }
-        Destroy(transform.root.gameObject);
+        Destroy(gameObject);
 
     }
 }
