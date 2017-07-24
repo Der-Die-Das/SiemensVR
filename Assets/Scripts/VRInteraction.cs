@@ -21,6 +21,8 @@ public abstract class VRInteraction : MonoBehaviour
     public Valve.VR.EVRButtonId touchpad = Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad;
     [HideInInspector]
     public Vector2 touchPadValue;
+    [HideInInspector]
+    public Valve.VR.EVRButtonId gripButton = Valve.VR.EVRButtonId.k_EButton_Grip;
 
     public Action<GameObject> onInteract;
 
@@ -69,7 +71,7 @@ public abstract class VRInteraction : MonoBehaviour
                 RaycastHit hit;
 
                 // Send out a raycast from the controller
-                if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 10000))
+                if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 10000) && !hit.collider.isTrigger)
                 {
                     laser.SetActive(true); //Show the laser
                     laserTransform.position = Vector3.Lerp(trackedObj.transform.position, hit.point, .5f); // Move laser to the middle between the controller and the position the raycast hit
@@ -87,7 +89,7 @@ public abstract class VRInteraction : MonoBehaviour
                 RaycastHit hit;
 
                 // Send out a raycast from the controller
-                if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 10000))
+                if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 10000) && !hit.collider.isTrigger)
                 {
                     onInteract(hit.collider.gameObject);
                 }

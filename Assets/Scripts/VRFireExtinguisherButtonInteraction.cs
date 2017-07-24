@@ -55,7 +55,7 @@ public class VRFireExtinguisherButtonInteraction : VRInteraction {
         isOn = !isOn;
         isSwitchingSide = true;
         Vector3 oldRot = button.transform.GetChild(0).localRotation.eulerAngles;
-        Vector3 targetRot = new Vector3(oldRot.x, oldRot.y, oldRot.z + 180);
+        Vector3 targetRot = new Vector3(oldRot.x, oldRot.y + 180, oldRot.z);
         
         while (button.transform.GetChild(0).localRotation != Quaternion.Euler(targetRot))
         {

@@ -1,24 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class FireExtinguisher : MonoBehaviour {
+public class FireExtinguisher : MonoBehaviour
+{
     public ParticleSystem water;
     private List<Fire> firesToExtinguish;
     public int firesNeededToActivate;
     public float durationInSeconds;
-    private bool activated = true;
+    public bool activated = true;
+    public float durationInSecondsBetweenFires;
+    private bool isExtinguishing = false;
 
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
         firesToExtinguish = new List<Fire>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
 
     public void SetActivated(bool pactivated)
     {
@@ -47,45 +53,76 @@ public class FireExtinguisher : MonoBehaviour {
         if (fire && !fire.GetComponentInParent<Lighter>())
         {
             firesToExtinguish.Add(fire);
-            checkForFireAndExtinguishThem();
+            if (!isExtinguishing)
+                checkForFireAndExtinguishThem();
         }
     }
     private void OnTriggerExit(Collider other)
     {
         Fire fire = other.gameObject.GetComponent<Fire>();
-        if (firesToExtinguish.Contains(fire))
+        if (fire)
         {
-            firesToExtinguish.Remove(fire);
+            foreach (Fire item in firesToExtinguish)
+            {
+                if (ReferenceEquals(fire, item))
+                {
+                    firesToExtinguish.Remove(fire);
+                    break;
+                }
+            }
         }
     }
 
     private void OnTriggerStay(Collider other)
     {
         Fire fire = other.gameObject.GetComponent<Fire>();
-        if (fire && !fire.GetComponentInParent<Lighter>() && !firesToExtinguish.Contains(fire))
+        if (fire)
         {
-            checkForFireAndExtinguishThem();
+            if (!isExtinguishing)
+                checkForFireAndExtinguishThem();
         }
     }
 
     private void checkForFireAndExtinguishThem()
     {
-        if (firesToExtinguish.Count >= firesNeededToActivate && activated)
-        {
-            StartExtinguishFire();
-            foreach (Fire item in firesToExtinguish)
+        
+            if (firesToExtinguish.Count >= firesNeededToActivate && activated)
             {
-                if (item != null)
-                    Destroy(item.gameObject);
+                isExtinguishing = true;
+                StartExtinguishFire();
+                StartCoroutine(WaitAndExtinguishFire());
+
             }
-            StartCoroutine(WaitAndStopParticleSystem());
-        }
     }
 
-    private IEnumerator WaitAndStopParticleSystem()
+    private IEnumerator WaitAndExtinguishFire()
     {
-        //suspend execution for certain amount of time
+        List<Fire> firesToExtinguishCopy = new List<Fire>(firesToExtinguish);
+        firesToExtinguish.Clear();
+        while (firesToExtinguishCopy.Count > 0)
+        {
+            yield return new WaitForSeconds(durationInSecondsBetweenFires);
+            Fire item;
+            int randomRange = 0;
+            if (firesToExtinguishCopy.Count == 1)
+            {
+                item = firesToExtinguishCopy[0];
+
+            }
+            else
+            {
+                randomRange = Random.Range(0, firesToExtinguishCopy.Count - 1);
+                item = firesToExtinguishCopy[randomRange];
+            }
+
+            if (item != null)
+                item.Extinguish();
+            else
+                firesToExtinguishCopy.RemoveAt(randomRange);
+        }
+
         yield return new WaitForSeconds(durationInSeconds);
         StopExtinguishFire();
+        isExtinguishing = false;
     }
 }
