@@ -29,7 +29,7 @@ public class VRFireExtinguisherInteraction : VRInteractionType {
                 else
                     interactedThisFrame = !interactedThisFrame;
             }
-            if (vrInteraction.Controller.GetPressDown(vrInteraction.gripButton))
+            if (vrInteraction.Controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_Grip))
             {
                 interactingFireExtinguisher.SetActivated(!interactingFireExtinguisher.GetActivated());
             }
