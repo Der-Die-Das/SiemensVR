@@ -4,25 +4,45 @@ using UnityEngine;
 
 public class ControllerManager : MonoBehaviour
 {
-    public SteamVR_TrackedObject[] trackedObjects;
+    public SteamVR_TrackedObject[] controllersForInitialization;
 
-    void Awake()
+    public ControllerInformation[] controllerInfos;
+
+    private void Awake()
     {
-        //SteamVR_TrackedObject[] temp = transform.parent.GetComponentsInChildren<SteamVR_TrackedObject>();
-        //List<SteamVR_TrackedObject> tempList = new List<SteamVR_TrackedObject>();
-        //for (int i = 0; i < temp.Length; i++)
-        //{
-        //    if (temp[i].name.Contains("Controller"))
-        //    {
-        //        tempList.Add(temp[i]);
-        //    }
-        //}
-        //trackedObjects = tempList.ToArray();
+        controllerInfos = new ControllerInformation[controllersForInitialization.Length];
+        for (int i = 0; i < controllersForInitialization.Length; i++)
+        {
+            VRSensor sensor = null;
+            try
+            {
+                sensor = controllersForInitialization[i].GetComponent<VRSensor>();
+            }
+            catch (System.NullReferenceException)
+            {
+                Debug.LogError("The controller: " + controllersForInitialization[i] + " has no VRSensor attached.");
+            }
+
+            controllerInfos[i] = new ControllerInformation(controllersForInitialization[i], sensor);
+        }
     }
+
 
     public SteamVR_Controller.Device GetController(int index)
     {
-        int deviceIndex = (int)trackedObjects[index].index;
+        int deviceIndex = (int)controllerInfos[index].trackedObj.index;
+        if (deviceIndex >= 0)
+        {
+            return SteamVR_Controller.Input(deviceIndex);
+        }
+        else
+        {
+            return null;
+        }
+    }
+    public SteamVR_Controller.Device GetController(SteamVR_TrackedObject trackedObj)
+    {
+        int deviceIndex = (int)trackedObj.index;
         if (deviceIndex >= 0)
         {
             return SteamVR_Controller.Input(deviceIndex);
@@ -35,11 +55,11 @@ public class ControllerManager : MonoBehaviour
 
     public bool ButtonHeldDownBothController(Valve.VR.EVRButtonId button)
     {
-        if (trackedObjects.Length == 0)
+        if (controllerInfos.Length == 0)
         {
             return false;
         }
-        for (int i = 0; i < trackedObjects.Length; i++)
+        for (int i = 0; i < controllerInfos.Length; i++)
         {
             if (GetController(i) == null)
                 return false;
@@ -50,5 +70,17 @@ public class ControllerManager : MonoBehaviour
             }
         }
         return true;
+    }
+
+    public ControllerInformation GetControllerInfo(SteamVR_TrackedObject obj)
+    {
+        foreach (var item in controllerInfos)
+        {
+            if (item.trackedObj == obj)
+            {
+                return item;
+            }
+        }
+        return null;
     }
 }

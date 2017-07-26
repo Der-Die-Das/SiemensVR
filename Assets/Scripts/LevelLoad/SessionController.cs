@@ -22,7 +22,7 @@ public class SessionController : MonoBehaviour
 
         InvokeRepeating("UpdateLabel", 0, 1);
     }
-    
+
     private void UpdateLabel()
     {
         TimeSpan leftTime = (endTime - DateTime.Now);
@@ -56,10 +56,17 @@ public class SessionController : MonoBehaviour
     private void LoadSessionLength()
     {
         SessionSettings settings;
-        using (FileStream fs = new FileStream(path, FileMode.Open))
+        try
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(SessionSettings));
-            settings = (SessionSettings)xmlSerializer.Deserialize(fs);
+            using (FileStream fs = new FileStream(path, FileMode.Open))
+            {
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(SessionSettings));
+                settings = (SessionSettings)xmlSerializer.Deserialize(fs);
+            }
+        }
+        catch (Exception)
+        {
+            throw;
         }
         if (settings != null)
         {

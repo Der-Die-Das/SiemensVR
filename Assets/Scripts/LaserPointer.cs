@@ -1,13 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-public class LaserPointer : MonoBehaviour
+public class LaserPointer : ControllerFunctionality
 {
     public Transform cameraRigTransform;
     public Transform headTransform; // The camera rig's head
     public Vector3 teleportReticleOffset; // Offset from the floor for the reticle to avoid z-fighting
     public LayerMask teleportMask; // Mask to filter out areas where teleports are allowed
-
-    private SteamVR_TrackedObject trackedObj;
 
     public GameObject laserPrefab; // The laser prefab
     private GameObject laser; // A reference to the spawned laser
@@ -20,16 +19,6 @@ public class LaserPointer : MonoBehaviour
     private Vector3 hitPoint; // Point where the raycast hits
     private bool shouldTeleport; // True if there's a valid teleport target
 
-    private SteamVR_Controller.Device Controller
-    {
-        get { return SteamVR_Controller.Input((int)trackedObj.index); }
-    }
-
-    void Awake()
-    {
-        trackedObj = GetComponent<SteamVR_TrackedObject>();
-    }
-
     //new
     void Start()
     {
@@ -39,41 +28,7 @@ public class LaserPointer : MonoBehaviour
         teleportReticleTransform = reticle.transform;
     }
 
-    void Update()
-    {
-        // Is the touchpad held down?
-        if (Controller.GetPress(SteamVR_Controller.ButtonMask.Touchpad))
-        {
-            RaycastHit hit;
-
-            // Send out a raycast from the controller
-            if (Physics.Raycast(trackedObj.transform.position, transform.forward, out hit, 100, teleportMask))
-            {
-                hitPoint = hit.point;
-
-                ShowLaser(hit);
-
-                //Show teleport reticle
-                reticle.SetActive(true);
-                teleportReticleTransform.position = hitPoint + teleportReticleOffset;
-
-                shouldTeleport = true;
-            }
-        }
-        else // Touchpad not held down, hide laser & teleport reticle
-        {
-            laser.SetActive(false);
-            reticle.SetActive(false);
-        }
-
-        // Touchpad released this frame & valid teleport position found
-        if (Controller.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && shouldTeleport)
-        {
-            Teleport();
-        }
-    }
-
-    private void ShowLaser(RaycastHit hit)
+    private void ShowLaser(RaycastHit hit, SteamVR_TrackedObject trackedObj)
     {
         laser.SetActive(true); //Show the laser
         laserTransform.position = Vector3.Lerp(trackedObj.transform.position, hitPoint, .5f); // Move laser to the middle between the controller and the position the raycast hit
@@ -90,5 +45,62 @@ public class LaserPointer : MonoBehaviour
         difference.y = 0; // Don't change the final position's y position, it should always be equal to that of the hit point
 
         cameraRigTransform.position = hitPoint + difference; // Change the camera rig position to where the the teleport reticle was. Also add the difference so the new virtual room position is relative to the player position, allowing the player's new position to be exactly where they pointed. (see illustration)
+    }
+
+    protected override void ActiveControllerUpdate(ControllerInformation controller)
+    {
+        // Is the touchpad held down?
+        if (controllerManager.GetController(controller.trackedObj).GetPress(SteamVR_Controller.ButtonMask.Touchpad))
+        {
+            RaycastHit hit;
+
+            // Send out a raycast from the controller
+            if (Physics.Raycast(controller.trackedObj.transform.position, controller.trackedObj.transform.forward, out hit, 100))
+            {
+                if (hit.collider.gameObject.layer == teleportMask)
+                hitPoint = hit.point;
+
+                ShowLaser(hit, controller.trackedObj);
+
+                //Show teleport reticle
+                reticle.SetActive(true);
+                teleportReticleTransform.position = hitPoint + teleportReticleOffset;
+
+                shouldTeleport = true;
+            }
+        }
+        else // Touchpad not held down, hide laser & teleport reticle
+        {
+            laser.SetActive(false);
+            reticle.SetActive(false);
+        }
+
+        // Touchpad released this frame & valid teleport position found
+        if (controllerManager.GetController(controller.trackedObj).GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && shouldTeleport)
+        {
+            Teleport();
+            activeController = null;
+        }
+    }
+
+    protected override void NonActiveControllerUpdate(ControllerInformation controller)
+    {
+
+    }
+
+    protected override void AnyControllerUpdate(ControllerInformation controller)
+    {
+        if (activeController == null)
+        {
+            if (controllerManager.GetController(controller.trackedObj).GetPress(SteamVR_Controller.ButtonMask.Touchpad))
+            {
+                activeController = controller;
+            }
+        }
+    }
+
+    protected override void OnControllerInitialized()
+    {
+        
     }
 }

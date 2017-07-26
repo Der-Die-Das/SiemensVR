@@ -164,7 +164,7 @@ public class TutorialScreen : MonoBehaviour
         return transform.Find("Screen").Find("LowerTopicBorder");
     }
     
-    public void NotEnoughSpace(Collision go)
+    public void NotEnoughSpace(Collision go, VRSensor sensor)
     {
         if (go.collider.GetComponent<UITracked>())
         {

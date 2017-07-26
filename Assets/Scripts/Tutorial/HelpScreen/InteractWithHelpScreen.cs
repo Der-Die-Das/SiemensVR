@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InteractWithHelpScreen : MonoBehaviour
+public class InteractWithHelpScreen : ControllerFunctionality
 {
     public static TutorialScreen interactingHelpScreen;
 
@@ -14,17 +15,6 @@ public class InteractWithHelpScreen : MonoBehaviour
     private GameObject laser; // A reference to the spawned laser
     private Transform laserTransform; // The transform component of the laser for ease of use
 
-    private SteamVR_TrackedObject trackedObj;
-
-    private SteamVR_Controller.Device Controller
-    {
-        get { return SteamVR_Controller.Input((int)trackedObj.index); }
-    }
-
-    void Awake()
-    {
-        trackedObj = GetComponent<SteamVR_TrackedObject>();
-    }
 
     // Use this for initialization
     void Start()
@@ -34,37 +24,11 @@ public class InteractWithHelpScreen : MonoBehaviour
         laser.SetActive(false);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        HideLaser();
-        if (interactingHelpScreen != null)
-        {
-            Ray ray = new Ray(transform.position, transform.forward);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, 100f, layer))
-            {
-                ShowLaser(hit);
-                if (hit.collider.gameObject.name == "UpperTopicBorder") //not the nicest way to solve..
-                {
-                    hit.collider.GetComponentInParent<TutorialScreen>().Scroll(-1);
-                }
-                else if (hit.collider.gameObject.name == "LowerTopicBorder") //not the nicest way to solve..
-                {
-                    hit.collider.GetComponentInParent<TutorialScreen>().Scroll(1);
-                }
-            }
 
-            if (Controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger))
-            {
-                Click();
-            }
-        }
-    }
     [ContextMenu("Click")]
-    public void Click()
+    public void Click(ControllerInformation controller)
     {
-        Ray ray = new Ray(transform.position, transform.forward);
+        Ray ray = new Ray(controller.trackedObj.transform.position, controller.trackedObj.transform.forward);
         Debug.DrawRay(transform.position, transform.forward * 100f);
         RaycastHit[] hits = Physics.RaycastAll(ray, 100f, layer);
         if (hits.Length > 0)
@@ -86,10 +50,10 @@ public class InteractWithHelpScreen : MonoBehaviour
             }
         }
     }
-    private void ShowLaser(RaycastHit hit)
+    private void ShowLaser(RaycastHit hit, ControllerInformation controller)
     {
         laser.SetActive(true); //Show the laser
-        laserTransform.position = Vector3.Lerp(trackedObj.transform.position, hit.point, .5f); // Move laser to the middle between the controller and the position the raycast hit
+        laserTransform.position = Vector3.Lerp(controller.trackedObj.transform.position, hit.point, .5f); // Move laser to the middle between the controller and the position the raycast hit
         laserTransform.LookAt(hit.point); // Rotate laser facing the hit point
         laserTransform.localScale = new Vector3(laserTransform.localScale.x, laserTransform.localScale.y,
             hit.distance * 1.333f); // Scale laser so it fits exactly between the controller & the hit point
@@ -98,5 +62,43 @@ public class InteractWithHelpScreen : MonoBehaviour
     {
         laser.SetActive(false);
     }
-}
 
+    protected override void ActiveControllerUpdate(ControllerInformation controller)
+    {
+        HideLaser();
+        //if (interactingHelpScreen != null)
+        //{
+            Ray ray = new Ray(controller.trackedObj.transform.position, controller.trackedObj.transform.forward);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, 10f, layer))
+            {
+                ShowLaser(hit, controller);
+                if (hit.collider.gameObject.name == "UpperTopicBorder") //not the nicest way to solve..
+                {
+                    hit.collider.GetComponentInParent<TutorialScreen>().Scroll(-1);
+                }
+                else if (hit.collider.gameObject.name == "LowerTopicBorder") //not the nicest way to solve..
+                {
+                    hit.collider.GetComponentInParent<TutorialScreen>().Scroll(1);
+                }
+            }
+
+            if (controllerManager.GetController(controller.trackedObj).GetPressDown(Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger))
+            {
+                Click(controller);
+            }
+        //}
+    }
+
+    protected override void NonActiveControllerUpdate(ControllerInformation controller)
+    {
+    }
+
+    protected override void AnyControllerUpdate(ControllerInformation controller)
+    {
+        if (activeController == null)
+        {
+            activeController = controller;
+        }
+    }
+}

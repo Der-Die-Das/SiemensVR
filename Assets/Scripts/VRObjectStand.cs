@@ -17,19 +17,17 @@ public class VRObjectStand : MonoBehaviour
     private Keycard objectInRange;
     private Keycard keycardIn;
 
-
-    public ControllerGrabObject[] grabs;
-
+    ControllerManager controllerManager;
     // Use this for initialization
     void Start()
     {
+        controllerManager = GameObject.FindObjectOfType<ControllerManager>();
         meshRenderer = GetComponent<MeshRenderer>();
         origColor = meshRenderer.material.color;
 
-
-        foreach (var item in grabs)
+        foreach (var item in controllerManager.controllerInfos)
         {
-            item.ObjectReleased += OnControllerDropObject;
+           // ((GrabObjectInformation)item.GetFunctionalityInfoByType(typeof(GrabObjectInformation))).ObjectReleased += OnControllerDropObject;
         }
         ejectButton.buttonPressed += OnEject;
 
@@ -47,7 +45,7 @@ public class VRObjectStand : MonoBehaviour
     private void OnControllerDropObject(GameObject obj)
     {
         Keycard card = obj.GetComponent<Keycard>();
-
+            
         if (card != null && card == objectInRange)
         {
             keycardIn = card;

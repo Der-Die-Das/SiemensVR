@@ -1,154 +1,176 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 /// <summary>
 /// Thje Script is attached to a Controller
 /// Script to grab Objects with a Rigidbody
 /// </summary>
-public class ControllerGrabObject : MonoBehaviour
+public class ControllerGrabObject : ControllerFunctionality
 {
-    /// <summary>
-    /// Event which gets fires when we relrease a object.
-    /// Gameobject is the object we release.
-    /// </summary>
-    public System.Action<GameObject> ObjectReleased;
+    JointBreakSensor jointBreakSensor;
 
-    private SteamVR_TrackedObject trackedObj;
-
-    /// <summary>
-    /// When our controller collide with a object we save it here
-    /// </summary>
-    private GameObject collidingObject;
-    /// <summary>
-    /// When we grab a object we save it here
-    /// </summary>
-    private GameObject objectInHand;
-
-    public SteamVR_Controller.Device Controller
+    protected override void Awake()
     {
-        get { return SteamVR_Controller.Input((int)trackedObj.index); }
+        info = new GrabObjectInformation();
+
+
+        base.Awake();
     }
 
-    void Awake()
+    private void TriggerEnter(Collider other, VRSensor sensor)
     {
-        trackedObj = GetComponent<SteamVR_TrackedObject>();
+        ControllerInformation info = controllerManager.GetControllerInfo(sensor.GetComponent<SteamVR_TrackedObject>());
+        SetCollidingObject(other, info);
     }
-
-
-    public void OnTriggerEnter(Collider other)
+    private void TriggerStay(Collider other, VRSensor sensor)
     {
-        SetCollidingObject(other);
+        ControllerInformation info = controllerManager.GetControllerInfo(sensor.GetComponent<SteamVR_TrackedObject>());
+        SetCollidingObject(other, info);
     }
-
-    public void OnTriggerStay(Collider other)
+    private void TriggerExit(Collider other, VRSensor sensor)
     {
-        SetCollidingObject(other);
-    }
-
-    public void OnTriggerExit(Collider other)
-    {
-        if (!collidingObject)
+        ControllerInformation info = controllerManager.GetControllerInfo(sensor.GetComponent<SteamVR_TrackedObject>());
+        GrabObjectInformation grabObjInfo = (GrabObjectInformation)info.GetFunctionalityInfoByType(typeof(GrabObjectInformation));
+        if (!grabObjInfo.collidingObject)
         {
             return;
         }
 
-        collidingObject = null;
+        grabObjInfo.collidingObject = null;
     }
 
     /// <summary>
     /// In here we check if the collision that jsut occured is relevant 
     /// </summary>
-    private void SetCollidingObject(Collider col)
+    private void SetCollidingObject(Collider col, ControllerInformation info)
     {
-        if (collidingObject || !col.GetComponent<Rigidbody>())
+        GrabObjectInformation grabObjInfo = (GrabObjectInformation)info.GetFunctionalityInfoByType(typeof(GrabObjectInformation));
+        if (grabObjInfo.collidingObject || !col.GetComponent<Rigidbody>() || col.GetComponent<SteamVR_TrackedObject>())
         {
             return;
         }
+        grabObjInfo.collidingObject = col.gameObject;
 
-        collidingObject = col.gameObject;
+        //Debug.Log("Collided with -> " +info.trackedObj + " - " + grabObjInfo.collidingObject.name);
     }
 
-    void Update()
+    private void GrabObject(ControllerInformation info)
     {
-        if (Controller.GetHairTriggerDown())
-        {
-            if (collidingObject)
-            {
-                GrabObject();
-            }
-        }
-
-        if (Controller.GetHairTriggerUp())
-        {
-            if (objectInHand)
-            {
-                ReleaseObject();
-            }
-        }
-
-        if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Grip))
-        {
-            if (objectInHand != null)
-            {
-                if (objectInHand.GetComponent<Lighter>())
-                {
-                    objectInHand.GetComponent<Lighter>().StartFire();
-                }
-            }
-        }
-
-        if (Controller.GetPressUp(SteamVR_Controller.ButtonMask.Grip))
-        {
-            if (objectInHand != null)
-            {
-                if (objectInHand.GetComponent<Lighter>())
-                {
-                    objectInHand.GetComponent<Lighter>().StopFire();
-                }
-            }
-        }
-    }
-
-    private void GrabObject()
-    {
-        objectInHand = collidingObject;
-        collidingObject = null;
+        GrabObjectInformation grabObjInfo = (GrabObjectInformation)info.GetFunctionalityInfoByType(typeof(GrabObjectInformation));
+        grabObjInfo.objectInHand = grabObjInfo.collidingObject;
+        grabObjInfo.collidingObject = null;
         //objectInHand.transform.position = Vector3.Lerp(transform.position,objectInHand.transform.position, 0.8f);
-        var joint = AddFixedJoint();
-        joint.connectedBody = objectInHand.GetComponent<Rigidbody>();
+        if (!info.trackedObj.GetComponent<FixedJoint>())
+        {
+            var joint = AddFixedJoint(info);
+            joint.connectedBody = grabObjInfo.objectInHand.GetComponent<Rigidbody>();
+        }
     }
 
-    private FixedJoint AddFixedJoint()
+    private FixedJoint AddFixedJoint(ControllerInformation info)
     {
-        FixedJoint fx = gameObject.AddComponent<FixedJoint>();
+        FixedJoint fx = info.trackedObj.gameObject.AddComponent<FixedJoint>();
         fx.breakForce = 20000;
         fx.breakTorque = 20000;
         return fx;
     }
 
-    private void ReleaseObject()
+    private void ReleaseObject(ControllerInformation info)
     {
-        if (objectInHand == null)
+        GrabObjectInformation grabObjInfo = (GrabObjectInformation)info.GetFunctionalityInfoByType(typeof(GrabObjectInformation));
+
+
+        FixedJoint[] joints = info.trackedObj.gameObject.GetComponents<FixedJoint>();
+        Debug.Log("Joints deleted: " + joints.Length);
+        if (joints != null && joints.Length > 0)
+        {
+            foreach (var item in joints)
+            {
+                item.connectedBody = null;
+                Destroy(item);
+            }
+
+        }
+        if (grabObjInfo.objectInHand == null)
             return;
+        grabObjInfo.objectInHand.GetComponent<Rigidbody>().velocity = Quaternion.Euler(0, 90, 0) * controllerManager.GetController(info.trackedObj).velocity;
+        grabObjInfo.objectInHand.GetComponent<Rigidbody>().angularVelocity = Quaternion.Euler(0, 90, 0) * controllerManager.GetController(info.trackedObj).angularVelocity;
 
-        if (GetComponent<FixedJoint>())
+
+        if (grabObjInfo.ObjectReleased != null)
         {
-            GetComponent<FixedJoint>().connectedBody = null;
-            Destroy(GetComponent<FixedJoint>());
-            objectInHand.GetComponent<Rigidbody>().velocity = Controller.velocity;
-            objectInHand.GetComponent<Rigidbody>().angularVelocity = Controller.angularVelocity;
+            grabObjInfo.ObjectReleased.Invoke(grabObjInfo.objectInHand);
         }
 
-        if (ObjectReleased != null)
-        {
-            ObjectReleased.Invoke(objectInHand);
-        }
-        objectInHand = null;
+        Debug.Log("Object Released on: " + info.trackedObj);
+        grabObjInfo.objectInHand = null;
     }
 
-    public void ForceGrab(GameObject go)
+    public void ForceGrab(GameObject go, ControllerInformation info)
     {
-        ReleaseObject();
-        collidingObject = go;
-        GrabObject();
+        GrabObjectInformation grabObjInfo = (GrabObjectInformation)info.GetFunctionalityInfoByType(typeof(GrabObjectInformation));
+        ReleaseObject(info);
+        grabObjInfo.collidingObject = go;
+        GrabObject(info);
+    }
+
+    protected override void ActiveControllerUpdate(ControllerInformation controller) { }
+
+    protected override void NonActiveControllerUpdate(ControllerInformation controller) { }
+
+    protected override void AnyControllerUpdate(ControllerInformation controller)
+    {
+        GrabObjectInformation grabObjInfo = (GrabObjectInformation)controller.GetFunctionalityInfoByType(typeof(GrabObjectInformation));
+
+        if (controllerManager.GetController(controller.trackedObj).GetHairTriggerDown())
+        {
+            if (grabObjInfo.collidingObject)
+            {
+                GrabObject(controller);
+            }
+        }
+
+        if (controllerManager.GetController(controller.trackedObj).GetHairTriggerUp())
+        {
+            ReleaseObject(controller);
+        }
+
+        if (controllerManager.GetController(controller.trackedObj).GetPressDown(SteamVR_Controller.ButtonMask.Grip))
+        {
+            if (grabObjInfo.objectInHand != null)
+            {
+                if (grabObjInfo.objectInHand.GetComponent<Lighter>())
+                {
+                    grabObjInfo.objectInHand.GetComponent<Lighter>().StartFire();
+                }
+            }
+        }
+
+        if (controllerManager.GetController(controller.trackedObj).GetPressUp(SteamVR_Controller.ButtonMask.Grip))
+        {
+            if (grabObjInfo.objectInHand != null)
+            {
+                if (grabObjInfo.objectInHand.GetComponent<Lighter>())
+                {
+                    grabObjInfo.objectInHand.GetComponent<Lighter>().StopFire();
+                }
+            }
+        }
+    }
+
+    protected override void OnControllerInitialized()
+    {
+        base.OnControllerInitialized();
+        foreach (var item in controllerManager.controllerInfos)
+        {
+            item.sensor.triggerEnter += TriggerEnter;
+            item.sensor.triggerLeave += TriggerExit;
+            item.sensor.triggerStay += TriggerStay;
+        }
+    }
+
+    private void OnJointBroke(JointBreakSensor sensor)
+    {
+        ReleaseObject(controllerManager.GetControllerInfo(sensor.GetComponent<SteamVR_TrackedObject>()));
     }
 }

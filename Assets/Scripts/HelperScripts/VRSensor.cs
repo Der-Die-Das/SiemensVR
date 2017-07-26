@@ -6,24 +6,34 @@ using System;
 [RequireComponent(typeof(Collider))]
 public class VRSensor : MonoBehaviour
 {
-    public Action<Collider> triggerEnter;
-    public Action<Collider> triggerLeave;
-    public Action<Collision> collisionEnter;
-    public Action<Collision> collisionLeave;
+    public Action<Collider, VRSensor> triggerEnter;
+    public Action<Collider, VRSensor> triggerStay;
+    public Action<Collider, VRSensor> triggerLeave;
+    public Action<Collision, VRSensor> collisionEnter;
+    public Action<Collision, VRSensor> collisionLeave;
 
     private void OnTriggerEnter(Collider other)
     {
         if (triggerEnter != null)
         {
-            triggerEnter(other);
+            triggerEnter(other, this);
         }
 
     }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (triggerStay != null)
+        {
+            triggerStay(other, this);
+        }
+    }
+
     private void OnTriggerExit(Collider other)
     {
         if (triggerLeave != null)
         {
-            triggerLeave(other);
+            triggerLeave(other, this);
         }
     }
 
@@ -31,14 +41,14 @@ public class VRSensor : MonoBehaviour
     {
         if (collisionEnter != null)
         {
-            collisionEnter(collision);
+            collisionEnter(collision, this);
         }
     }
     private void OnCollisionExit(Collision collision)
     {
         if (collisionLeave != null)
         {
-            collisionLeave(collision);
+            collisionLeave(collision, this);
         }
     }
 }

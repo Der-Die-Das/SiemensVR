@@ -1,41 +1,59 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GiveScreenSpawner : MonoBehaviour
+public class GiveScreenSpawner : ControllerFunctionality
 {
     public GameObject spawnerPrefab;
     public Vector3 spawnOffset;
-    public ControllerGrabObject activeGrabber;
+    public VRSensor hipSensor;
 
-    private void OnTriggerEnter(Collider other)
+    private void Start()
     {
-        if (other.tag == "controller")
+        hipSensor.triggerEnter += TriggerEnter;
+        hipSensor.triggerLeave += TriggerExit;
+    }
+
+
+    private void TriggerEnter(Collider other, VRSensor sensor)
+    {
+        var trackedObj = other.GetComponent<SteamVR_TrackedObject>();
+        if (trackedObj)
         {
-            ControllerGrabObject grabber = other.GetComponent<ControllerGrabObject>();
-            if (activeGrabber == null)
+            ControllerInformation grabber = controllerManager.GetControllerInfo(trackedObj);
+            if (activeController == null)
             {
-                activeGrabber = grabber;
+                activeController = grabber;
             }
         }
     }
-    private void OnTriggerExit(Collider other)
+    private void TriggerExit(Collider other, VRSensor sensor)
     {
-        if (other.tag == "controller")
+        var trackedObj = other.GetComponent<SteamVR_TrackedObject>();
+        if (trackedObj)
         {
-            ControllerGrabObject grabber = other.GetComponent<ControllerGrabObject>();
-            if (activeGrabber == grabber)
+            ControllerInformation grabber = controllerManager.GetControllerInfo(trackedObj);
+            if (activeController == grabber)
             {
-                activeGrabber = null;
+                activeController = null;
             }
         }
     }
 
-    private void Update()
+    protected override void ActiveControllerUpdate(ControllerInformation controller)
     {
-        if (activeGrabber != null && activeGrabber.Controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger) && InteractWithHelpScreen.interactingHelpScreen == null)
+        if (controllerManager.GetController(controller.trackedObj).GetPressDown(Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger) && InteractWithHelpScreen.interactingHelpScreen == null)
         {
-            activeGrabber.ForceGrab(Instantiate(spawnerPrefab, activeGrabber.transform.position + spawnOffset, Quaternion.identity));
+            controllerManager.GetComponent<ControllerGrabObject>().ForceGrab(Instantiate(spawnerPrefab, controller.trackedObj.transform.position + spawnOffset, Quaternion.identity), controller);
         }
+    }
+
+    protected override void NonActiveControllerUpdate(ControllerInformation controller)
+    {
+    }
+
+    protected override void AnyControllerUpdate(ControllerInformation controller)
+    {
     }
 }

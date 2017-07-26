@@ -41,10 +41,12 @@ public class LoadGame : MonoBehaviour
     {
         if (controllerManager.ButtonHeldDownBothController(Valve.VR.EVRButtonId.k_EButton_Grip))
         {
+            Debug.Log("true");
             FillPercentage += increaseSpeed * Time.deltaTime;
         }
         else
         {
+            Debug.Log("False");
             FillPercentage -= increaseSpeed * Time.deltaTime;
         }
     }
