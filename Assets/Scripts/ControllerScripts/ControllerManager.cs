@@ -83,4 +83,15 @@ public class ControllerManager : MonoBehaviour
         }
         return null;
     }
+    public ControllerInformation getOtherController(ControllerInformation controller)
+    {
+        foreach (var item in controllerInfos)
+        {
+            if (item != controller)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
 }

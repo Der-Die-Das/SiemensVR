@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VRFireExtinguisherInteraction : VRInteractionType {
-    
+public class VRFireExtinguisherInteraction : VRInteractionType
+{
+
     [HideInInspector]
     public FireExtinguisher interactingFireExtinguisher;
 
@@ -13,6 +15,7 @@ public class VRFireExtinguisherInteraction : VRInteractionType {
     {
         base.Start();
         vrInteraction = GetComponent<VRFireExtinguisherButtonInteraction>();
+<<<<<<< Updated upstream
         vrInteraction.onInteract += OnInteract;
     }
     void Update()
@@ -35,9 +38,11 @@ public class VRFireExtinguisherInteraction : VRInteractionType {
             }
         }
 
+=======
+>>>>>>> Stashed changes
     }
 
-    protected override void OnInteract(GameObject go)
+    protected override void OnInteract(GameObject go, ControllerInformation controller)
     {
         interactingFireExtinguisher = go.GetComponent<FireExtinguisher>();
 
@@ -46,17 +51,13 @@ public class VRFireExtinguisherInteraction : VRInteractionType {
             ((VRFireExtinguisherButtonInteraction)vrInteraction).ShowButton();
             vrInteraction.interactingWith = this;
             interactedThisFrame = true;
+            ActiveController = controller;
         }
-        // use this once merged with Time-Issue
-        //else if (!go.GetComponent<VRClock>())
-        //{
-        //    vrInteraction.Controller.TriggerHapticPulse(3000);
-        //}
 
         // delete this when merged with Time-Issue
         else
         {
-            vrInteraction.Controller.TriggerHapticPulse(3000);
+            controllerManager.GetController(controller.trackedObj).TriggerHapticPulse(3000);
         }
     }
 
@@ -64,4 +65,30 @@ public class VRFireExtinguisherInteraction : VRInteractionType {
     {
         interactingFireExtinguisher.SetActivated(state);
     }
+
+    protected override void ActiveControllerUpdate(ControllerInformation controller)
+    {
+        if (vrInteraction.interactingWith && vrInteraction.interactingWith == this)
+        {
+            if (controllerManager.GetController(controller.trackedObj).GetPressUp(vrInteraction.menuButton))
+            {
+                if (!interactedThisFrame)
+                {
+                    vrInteraction.interactingWith = null;
+                    ((VRFireExtinguisherButtonInteraction)vrInteraction).HideButton();
+                    ActiveController = null;
+                }
+                else
+                    interactedThisFrame = !interactedThisFrame;
+            }
+            if (controllerManager.GetController(controller.trackedObj).GetPressDown(vrInteraction.gripButton))
+            {
+                interactingFireExtinguisher.SetActivated(!interactingFireExtinguisher.GetActivated());
+            }
+        }
+    }
+
+    protected override void NonActiveControllerUpdate(ControllerInformation controller) { }
+
+    protected override void AnyControllerUpdate(ControllerInformation controller) { }
 }

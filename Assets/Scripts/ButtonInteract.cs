@@ -1,82 +1,93 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// This Script is attached to a Controller.
 /// The Script is used to interact with buttons.
 /// </summary>
-public class ButtonInteract : MonoBehaviour
+public class ButtonInteract : ControllerFunctionality
 {
-
-    private SteamVR_TrackedObject trackedObj;
-
-    private SteamVR_Controller.Device Controller
+    protected override void Awake()
     {
-        get { return SteamVR_Controller.Input((int)trackedObj.index); }
+        info = new ButtonInteractInformation();
+
+        base.Awake();
     }
 
 
-    private VRButton buttonInRange;
-
-    void Awake()
+    private void TriggerEnter(Collider other, VRSensor sensor)
     {
-        trackedObj = GetComponent<SteamVR_TrackedObject>();
-    }
+        ControllerInformation controller = controllerManager.GetControllerInfo(sensor.GetComponent<SteamVR_TrackedObject>());
+        ButtonInteractInformation grabObjInfo = (ButtonInteractInformation)controller.GetFunctionalityInfoByType(typeof(ButtonInteractInformation));
 
-    // Update is called once per frame
-    void Update()
-    {
-        //Here we check if the Trigger is pressed down.
-        if (Controller.GetHairTriggerDown())
-        {
-            if (buttonInRange != null)
-            {
-                buttonInRange.Interact();
-            }
-
-        }
-    }
-
-    //If something enters our Trigger..
-    private void OnTriggerEnter(Collider other)
-    {
         VRButton button = other.GetComponent<VRButton>();
         //we check if it is a button and we are not already interacting with one
-        if (button != null && buttonInRange == null)
+        if (button != null && grabObjInfo.buttonInRange == null)
         {
-            buttonInRange = button;
+
+
+            grabObjInfo.buttonInRange = button;
             //And then we apply color to the button..
             button.OnControllerEnter();
         }
     }
-
-    //same as OnTriggerEnter, since we sometimes lose "buttonInRange" and then no new Button is applied
-    private void OnTriggerStay(Collider other)
+    private void TriggerStay(Collider other, VRSensor sensor)
     {
-        if (buttonInRange == null)
+        ControllerInformation controller = controllerManager.GetControllerInfo(sensor.GetComponent<SteamVR_TrackedObject>());
+        ButtonInteractInformation grabObjInfo = (ButtonInteractInformation)controller.GetFunctionalityInfoByType(typeof(ButtonInteractInformation));
+
+        if (grabObjInfo.buttonInRange == null)
         {
             VRButton button = other.GetComponent<VRButton>();
             if (button != null)
             {
-                buttonInRange = button;
+                grabObjInfo.buttonInRange = button;
                 button.OnControllerEnter();
             }
         }
     }
-
-    //if something left our Trigger
-    private void OnTriggerExit(Collider other)
+    private void TriggerExit(Collider other, VRSensor sensor)
     {
+        ControllerInformation controller = controllerManager.GetControllerInfo(sensor.GetComponent<SteamVR_TrackedObject>());
+        ButtonInteractInformation grabObjInfo = (ButtonInteractInformation)controller.GetFunctionalityInfoByType(typeof(ButtonInteractInformation));
+
         VRButton button = other.GetComponent<VRButton>();
         //we check if it was a button and if it was the one in range
-        if (button != null && button == buttonInRange)
+        if (button != null && button == grabObjInfo.buttonInRange)
         {
-            buttonInRange = null;
+            grabObjInfo.buttonInRange = null;
             //we get rid of the color again
             button.OnControllerLeave();
         }
     }
+    protected override void ActiveControllerUpdate(ControllerInformation controller) { }
+
+    protected override void NonActiveControllerUpdate(ControllerInformation controller) { }
+
+    protected override void AnyControllerUpdate(ControllerInformation controller)
+    {
+        ButtonInteractInformation grabObjInfo = (ButtonInteractInformation)controller.GetFunctionalityInfoByType(typeof(ButtonInteractInformation));
+        if (controllerManager.GetController(controller.trackedObj).GetHairTriggerDown())
+        {
+            if (grabObjInfo.buttonInRange != null)
+            {
+                grabObjInfo.buttonInRange.Interact();
+            }
+
+        }
+    }
 
 
+    protected override void OnControllerInitialized()
+    {
+        base.OnControllerInitialized();
+
+        foreach (var item in controllerManager.controllerInfos)
+        {
+            item.sensor.triggerEnter += TriggerEnter;
+            item.sensor.triggerStay += TriggerStay;
+            item.sensor.triggerLeave += TriggerExit;
+        }
+    }
 }

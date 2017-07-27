@@ -18,5 +18,5 @@ public class GrabObjectInformation : ControllerFunctionalityInformation {
     /// <summary>
     /// When we grab a object we save it here
     /// </summary>
-    public GameObject objectInHand { get; set; }
+    public GameObject objectInHand;
 }

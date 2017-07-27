@@ -22,9 +22,9 @@ public class GiveScreenSpawner : ControllerFunctionality
         if (trackedObj)
         {
             ControllerInformation grabber = controllerManager.GetControllerInfo(trackedObj);
-            if (activeController == null)
+            if (ActiveController == null)
             {
-                activeController = grabber;
+                ActiveController = grabber;
             }
         }
     }
@@ -34,9 +34,9 @@ public class GiveScreenSpawner : ControllerFunctionality
         if (trackedObj)
         {
             ControllerInformation grabber = controllerManager.GetControllerInfo(trackedObj);
-            if (activeController == grabber)
+            if (ActiveController == grabber)
             {
-                activeController = null;
+                ActiveController = null;
             }
         }
     }

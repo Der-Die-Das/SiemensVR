@@ -49,37 +49,38 @@ public class LaserPointer : ControllerFunctionality
 
     protected override void ActiveControllerUpdate(ControllerInformation controller)
     {
+        laser.SetActive(false);
+        reticle.SetActive(false);
+
+
         // Is the touchpad held down?
         if (controllerManager.GetController(controller.trackedObj).GetPress(SteamVR_Controller.ButtonMask.Touchpad))
         {
             RaycastHit hit;
 
             // Send out a raycast from the controller
-            if (Physics.Raycast(controller.trackedObj.transform.position, controller.trackedObj.transform.forward, out hit, 100))
+            if (Physics.Raycast(controller.trackedObj.transform.position, controller.trackedObj.transform.forward, out hit, 100, LayerMask.NameToLayer("Everything"), QueryTriggerInteraction.Ignore))
             {
-                if (hit.collider.gameObject.layer == teleportMask)
-                hitPoint = hit.point;
+                if (teleportMask == (teleportMask | (1 << hit.collider.gameObject.layer)))
+                {
+                    hitPoint = hit.point;
 
-                ShowLaser(hit, controller.trackedObj);
+                    ShowLaser(hit, controller.trackedObj);
 
-                //Show teleport reticle
-                reticle.SetActive(true);
-                teleportReticleTransform.position = hitPoint + teleportReticleOffset;
+                    //Show teleport reticle
+                    reticle.SetActive(true);
+                    teleportReticleTransform.position = hitPoint + teleportReticleOffset;
 
-                shouldTeleport = true;
+                    shouldTeleport = true;
+                }
             }
-        }
-        else // Touchpad not held down, hide laser & teleport reticle
-        {
-            laser.SetActive(false);
-            reticle.SetActive(false);
         }
 
         // Touchpad released this frame & valid teleport position found
         if (controllerManager.GetController(controller.trackedObj).GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && shouldTeleport)
         {
             Teleport();
-            activeController = null;
+            ActiveController = null;
         }
     }
 
@@ -90,17 +91,17 @@ public class LaserPointer : ControllerFunctionality
 
     protected override void AnyControllerUpdate(ControllerInformation controller)
     {
-        if (activeController == null)
+        if (ActiveController == null)
         {
             if (controllerManager.GetController(controller.trackedObj).GetPress(SteamVR_Controller.ButtonMask.Touchpad))
             {
-                activeController = controller;
+                ActiveController = controller;
             }
         }
     }
 
     protected override void OnControllerInitialized()
     {
-        
+
     }
 }

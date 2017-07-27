@@ -6,7 +6,21 @@ using UnityEngine;
 public abstract class ControllerFunctionality : MonoBehaviour
 {
     public ControllerManager controllerManager { get; private set; }
-    public ControllerInformation activeController { get; set; }
+
+    public ControllerInformation nonActiveController { get; set; }
+
+    private ControllerInformation _activeController;
+    public ControllerInformation ActiveController
+    {
+        get
+        {
+            return _activeController;
+        }
+        set
+        {
+            _activeController = value;
+        }
+    }
     public ControllerFunctionalityInformation info { private get; set; }
 
     protected virtual void Awake()
@@ -37,14 +51,16 @@ public abstract class ControllerFunctionality : MonoBehaviour
                 //go to the next controller
                 continue;
             }
-
-            if (controller == activeController)
+            if (ActiveController != null)
             {
-                ActiveControllerUpdate(controller);
-            }
-            else
-            {
-                NonActiveControllerUpdate(controller);
+                if (controller == ActiveController)
+                {
+                    ActiveControllerUpdate(controller);
+                }
+                else
+                {
+                    NonActiveControllerUpdate(controller);
+                }
             }
             AnyControllerUpdate(controller);
         }
@@ -74,7 +90,6 @@ public abstract class ControllerFunctionality : MonoBehaviour
     /// </summary>
     /// <param name="controller">The Controller</param>
     protected abstract void AnyControllerUpdate(ControllerInformation controller);
-
     /// <summary>
     /// This method gets called as soon as the controllers are intialized
     /// </summary>

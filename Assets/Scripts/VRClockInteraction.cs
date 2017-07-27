@@ -19,16 +19,82 @@ public class VRClockInteraction : VRInteractionType
         ((VRWatchInteraction)vrInteraction).updateDisplay += UpdateDisplay;
 
     }
-    protected void Update()
+    protected override void OnInteract(GameObject go, ControllerInformation controller)
+    {
+        interactingClock = go.GetComponent<VRClock>();
+        if (interactingClock)
+        {
+            ((VRWatchInteraction)vrInteraction).ShowWatch(controller);
+            vrInteraction.interactingWith = this;
+            interactedThisFrame = true;
+            ActiveController = controller;
+        }
+        else
+        {
+            controllerManager.GetController(controller.trackedObj).TriggerHapticPulse(3000);
+            ActiveController = null;
+        }
+    }
+    private void OnTimeChanged(float newTime)
+    {
+        foreach (var item in controllerManager.controllerInfos)
+        {
+            UpdateDisplay(item);
+        }
+
+    }
+    protected void UpdateDisplay(ControllerInformation controller)
+    {
+        WatchInteractionInformation info = (WatchInteractionInformation)controller.GetFunctionalityInfoByType(typeof(WatchInteractionInformation));
+
+        if (info != null)
+        {
+            if (info.watch.activeSelf && vrInteraction.interactingWith == this)
+            {
+                foreach (var item in info.allParts)
+                {
+                    StartCoroutine(((VRWatchInteraction)vrInteraction).SetPartToNormal(item));
+                }
+                if (info.isWatchOnFront != timeScript.isNight)
+                {
+                    if (Mathf.FloorToInt(timeScript.Time) - 1 >= 0 && Mathf.FloorToInt(timeScript.Time) - 1 < info.allParts.Length)
+                    {
+                        StartCoroutine(((VRWatchInteraction)vrInteraction).SetPartToSelected(((VRWatchInteraction)vrInteraction).getCorrectPart(Mathf.FloorToInt(timeScript.Time), controller)));
+                    }
+                }
+            }
+        }
+    }
+    public void SetTime(int newTime, ControllerInformation controller)
+    {
+        WatchInteractionInformation info = (WatchInteractionInformation)controller.GetFunctionalityInfoByType(typeof(WatchInteractionInformation));
+
+        if (timeScript.Time != newTime)
+        {
+            float f = timeScript.Time - Mathf.Floor(timeScript.Time);
+            timeScript.Time = newTime + f;
+            timeScript.isNight = !info.isWatchOnFront;
+            OnTimeChanged(timeScript.Time);
+
+            //notification for tutorial
+            if (interactingClock.taskCompleted[2] != null)
+            {
+                interactingClock.taskCompleted[2].Invoke();
+            }
+        }
+    }
+
+    protected override void ActiveControllerUpdate(ControllerInformation controller)
     {
         if (vrInteraction.interactingWith && vrInteraction.interactingWith == this)
         {
-            if (vrInteraction.Controller.GetPressUp(vrInteraction.menuButton))
+            if (controllerManager.GetController(controller.trackedObj).GetPressUp(vrInteraction.menuButton))
             {
                 if (!interactedThisFrame)
                 {
                     vrInteraction.interactingWith = null;
-                    ((VRWatchInteraction)vrInteraction).HideWatch();
+                    ((VRWatchInteraction)vrInteraction).HideWatch(controller);
+                    ActiveController = null;
                 }
                 else
                 {
@@ -41,7 +107,7 @@ public class VRClockInteraction : VRInteractionType
                 }
 
             }
-            if (vrInteraction.Controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_Grip))
+            if (controllerManager.GetController(controller.trackedObj).GetPressDown(Valve.VR.EVRButtonId.k_EButton_Grip))
             {
                 //notification for tutorial
                 if (interactingClock.taskCompleted[1] != null)
@@ -49,65 +115,17 @@ public class VRClockInteraction : VRInteractionType
                     interactingClock.taskCompleted[1].Invoke();
                 }
             }
-
+            vrInteraction.touchPadValue = controllerManager.GetController(controller.trackedObj).GetAxis(Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad);
             int time = ((VRWatchInteraction)vrInteraction).getTimeByVector(vrInteraction.touchPadValue);
             if (time != 0 && Mathf.Floor(time) != Mathf.Floor(timeScript.Time))
             {
-                SetTime(time);
-                vrInteraction.Controller.TriggerHapticPulse(3000);
+                SetTime(time, controller);
+                controllerManager.GetController(controller.trackedObj).TriggerHapticPulse(3000);
             }
         }
     }
-    protected override void OnInteract(GameObject go)
-    {
-        interactingClock = go.GetComponent<VRClock>();
-        if (interactingClock)
-        {
-            ((VRWatchInteraction)vrInteraction).ShowWatch();
-            vrInteraction.interactingWith = this;
-            interactedThisFrame = true;
-        }
-        else
-        {
-            vrInteraction.Controller.TriggerHapticPulse(3000);
-        }
-    }
-    private void OnTimeChanged(float newTime)
-    {
-        UpdateDisplay();
-    }
-    protected void UpdateDisplay()
-    {
-        if (((VRWatchInteraction)vrInteraction).watch.activeSelf && vrInteraction.interactingWith == this)
-        {
-            foreach (var item in ((VRWatchInteraction)vrInteraction).allParts)
-            {
-                StartCoroutine(((VRWatchInteraction)vrInteraction).SetPartToNormal(item));
-            }
-            if (((VRWatchInteraction)vrInteraction).isWatchOnFront != timeScript.isNight)
-            {   
-                if (Mathf.FloorToInt(timeScript.Time) - 1 >= 0 && Mathf.FloorToInt(timeScript.Time) - 1 < ((VRWatchInteraction)vrInteraction).allParts.Length)
-                {
-                    StartCoroutine(((VRWatchInteraction)vrInteraction).SetPartToSelected(((VRWatchInteraction)vrInteraction).getCorrectPart(Mathf.FloorToInt(timeScript.Time))));
-                }
-            }
-        }
-    }
-    public void SetTime(int newTime)
-    {
-        if (timeScript.Time != newTime)
-        {
-            float f = timeScript.Time - Mathf.Floor(timeScript.Time);
-            timeScript.Time = newTime + f;
-            timeScript.isNight = !((VRWatchInteraction)vrInteraction).isWatchOnFront;
-            UpdateDisplay();
 
-            //notification for tutorial
-            if (interactingClock.taskCompleted[2] != null)
-            {
-                interactingClock.taskCompleted[2].Invoke();
-            }
-        }
-    }
-    
+    protected override void NonActiveControllerUpdate(ControllerInformation controller){}
+
+    protected override void AnyControllerUpdate(ControllerInformation controller) { }
 }

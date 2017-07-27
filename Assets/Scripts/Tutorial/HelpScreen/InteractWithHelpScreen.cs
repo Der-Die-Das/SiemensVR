@@ -96,9 +96,9 @@ public class InteractWithHelpScreen : ControllerFunctionality
 
     protected override void AnyControllerUpdate(ControllerInformation controller)
     {
-        if (activeController == null)
+        if (ActiveController == null)
         {
-            activeController = controller;
+            ActiveController = controller;
         }
     }
 }

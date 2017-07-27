@@ -24,9 +24,10 @@ public class VRFireExtinguisherButtonInteraction : VRInteraction {
 	}
 	
 	// Update is called once per frame
-	protected override void Update () {
-        base.Update();
+	//protected override void Update () {
+ //       base.Update();
 
+<<<<<<< Updated upstream
         if (interactingWith)
         {
             if (Controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_Grip))
@@ -34,9 +35,18 @@ public class VRFireExtinguisherButtonInteraction : VRInteraction {
                 StartCoroutine(SwitchSide());
             }
         }
+=======
+ //       if (interactingWith)
+ //       {
+ //           if (Controller.GetPressDown(gripButton))
+ //           {
+ //               StartCoroutine(SwitchSide());
+ //           }
+ //       }
+>>>>>>> Stashed changes
 
-        button.transform.LookAt(head);
-	}
+ //       button.transform.LookAt(head);
+	//}
     public void ShowButton()
     {
         button.SetActive(true);

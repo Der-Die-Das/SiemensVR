@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class VRInteractionType : MonoBehaviour
+public abstract class VRInteractionType : ControllerFunctionality
 {
     protected VRInteraction vrInteraction;
 
@@ -12,6 +12,6 @@ public abstract class VRInteractionType : MonoBehaviour
         vrInteraction.onInteract += OnInteract;
     }
 
-    protected abstract void OnInteract(GameObject go);
+    protected abstract void OnInteract(GameObject go, ControllerInformation controller);
 
 }

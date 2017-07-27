@@ -5,12 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(VRWatchInteraction))]
 public class VRLightInteraction : VRInteractionType
 {
-    public bool isOnTime;
-    public GameObject accordingTimePrefab;
-    VRLight interactingLight;
-    VRLightInteraction otherLightInteractor;
+    public GameObject[] accordingTimePrefab;
+    private VRLight interactingLight;
 
-    GameObject OnOffTimeObject;
 
     private bool interactedThisFrame = false;
 
@@ -18,10 +15,22 @@ public class VRLightInteraction : VRInteractionType
     protected override void Start()
     {
         base.Start();
-        OnOffTimeObject = (GameObject)Instantiate(accordingTimePrefab, ((VRWatchInteraction)vrInteraction).watch.transform, false);
-        OnOffTimeObject.SetActive(false);
+
+        var controllers = controllerManager.controllerInfos;
+
+        for (int i = 0; i < controllers.Length; i++)
+        {
+            LightInteractionInformation info = (LightInteractionInformation)controllers[i].GetFunctionalityInfoByType(typeof(LightInteractionInformation));
+            WatchInteractionInformation watchInfo = (WatchInteractionInformation)controllers[i].GetFunctionalityInfoByType(typeof(WatchInteractionInformation));
+
+            info.isOnTime = (i == 0 ? true : false);
+
+            info.OnOffTimeObject = (GameObject)Instantiate(accordingTimePrefab[i], watchInfo.watch.transform, false);
+            info.OnOffTimeObject.SetActive(false);
+
+        }
+
         vrInteraction = GetComponent<VRWatchInteraction>();
-        otherLightInteractor = vrInteraction.otherInteractor.GetComponent<VRLightInteraction>();
         ((VRWatchInteraction)vrInteraction).onInteract += OnInteract;
         ((VRWatchInteraction)vrInteraction).updateDisplay += UpdateDisplay;
     }
@@ -29,109 +38,33 @@ public class VRLightInteraction : VRInteractionType
 
     protected void Update()
     {
-        if (vrInteraction.interactingWith && (vrInteraction.interactingWith == this || vrInteraction.interactingWith == otherLightInteractor))
-        {
-            if (!interactedThisFrame)
-            {
-                if (vrInteraction.Controller.GetPressUp(vrInteraction.menuButton))
-                {
-                    vrInteraction.interactingWith = null;
-                    vrInteraction.otherInteractor.interactingWith = null;
-                    ((VRWatchInteraction)vrInteraction).HideWatch();
-                    ((VRWatchInteraction)otherLightInteractor.vrInteraction).HideWatch();
-                    OnOffTimeObject.SetActive(false);
-                    otherLightInteractor.OnOffTimeObject.SetActive(false);
-                }
-            }
-            else
-            {
-                interactedThisFrame = !interactedThisFrame;
-            }
-            int time = ((VRWatchInteraction)vrInteraction).getTimeByVector(vrInteraction.touchPadValue);
-            if (time != 0)
-            {
-                if (!((VRWatchInteraction)vrInteraction).isWatchOnFront)
-                {
-                    time += 12;
-                }
-                if (isOnTime && Mathf.Floor(time) != Mathf.Floor(interactingLight.StartTime))
-                {
-                    interactingLight.StartTime = time;
-                    vrInteraction.Controller.TriggerHapticPulse(3000);
-                    UpdateDisplay();
-                    if (interactingLight.taskCompleted[2] != null)
-                    {
-                        interactingLight.taskCompleted[2].Invoke();
-                    }
-                }
-                else if (Mathf.Floor(time) != Mathf.Floor(interactingLight.EndTime))
-                {
-                    interactingLight.EndTime = time;
-                    vrInteraction.Controller.TriggerHapticPulse(3000);
-                    UpdateDisplay();
-                    if (interactingLight.taskCompleted[2] != null)
-                    {
-                        interactingLight.taskCompleted[2].Invoke();
-                    }
-                }
-            }
-            if (vrInteraction.Controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_Grip))
-            {
-                if (interactingLight.taskCompleted[1] != null)
-                {
-                    interactingLight.taskCompleted[1].Invoke();
-                }
-            }
-        }
+
     }
 
 
-    protected override void OnInteract(GameObject go)
+    protected void UpdateDisplay(ControllerInformation controller)
     {
-        interactingLight = go.GetComponent<VRLight>();
-        if (interactingLight)
-        {
-            otherLightInteractor.interactingLight = interactingLight;
+        LightInteractionInformation info = (LightInteractionInformation)controller.GetFunctionalityInfoByType(typeof(LightInteractionInformation));
+        WatchInteractionInformation watchInfo = (WatchInteractionInformation)controller.GetFunctionalityInfoByType(typeof(WatchInteractionInformation));
 
-            ((VRWatchInteraction)vrInteraction).ShowWatch();
-            ((VRWatchInteraction)otherLightInteractor.vrInteraction).ShowWatch();
-            vrInteraction.interactingWith = this;
-            otherLightInteractor.vrInteraction.interactingWith = this;
-            interactedThisFrame = true;
-            OnOffTimeObject.SetActive(true);
-            otherLightInteractor.OnOffTimeObject.SetActive(true);
-
-            if (interactingLight.taskCompleted[0] != null)
-            {
-                interactingLight.taskCompleted[0].Invoke();
-            }
-        }
-        else
-        {
-            vrInteraction.Controller.TriggerHapticPulse(3000);
-        }
-    }
-
-    protected void UpdateDisplay()
-    {
-        if (((VRWatchInteraction)vrInteraction).watch.activeSelf && (vrInteraction.interactingWith == this || vrInteraction.interactingWith == otherLightInteractor))
+        if (watchInfo.watch.activeSelf && vrInteraction.interactingWith == this)
         {
             GameObject correctPart = null;
-            if (isOnTime)
+            if (info.isOnTime)
             {
-                if ((((VRWatchInteraction)vrInteraction).isWatchOnFront && interactingLight.StartTime < 13) || (!((VRWatchInteraction)vrInteraction).isWatchOnFront && interactingLight.StartTime > 12))
+                if ((watchInfo.isWatchOnFront && interactingLight.StartTime < 13) || (!watchInfo.isWatchOnFront && interactingLight.StartTime > 12))
                 {
-                    correctPart = ((VRWatchInteraction)vrInteraction).getCorrectPart(interactingLight.StartTime);
+                    correctPart = ((VRWatchInteraction)vrInteraction).getCorrectPart(interactingLight.StartTime, controller);
                 }
             }
             else
             {
-                if ((((VRWatchInteraction)vrInteraction).isWatchOnFront && interactingLight.EndTime < 13) || (!((VRWatchInteraction)vrInteraction).isWatchOnFront && interactingLight.EndTime > 12))
+                if ((watchInfo.isWatchOnFront && interactingLight.EndTime < 13) || (!watchInfo.isWatchOnFront && interactingLight.EndTime > 12))
                 {
-                    correctPart = ((VRWatchInteraction)vrInteraction).getCorrectPart(interactingLight.EndTime);
+                    correctPart = ((VRWatchInteraction)vrInteraction).getCorrectPart(interactingLight.EndTime, controller);
                 }
             }
-            foreach (var item in ((VRWatchInteraction)vrInteraction).allParts)
+            foreach (var item in watchInfo.allParts)
             {
                 if (item != correctPart)
                     StartCoroutine(((VRWatchInteraction)vrInteraction).SetPartToNormal(item));
@@ -143,4 +76,104 @@ public class VRLightInteraction : VRInteractionType
 
         }
     }
+
+    protected override void OnInteract(GameObject go, ControllerInformation controller)
+    {
+        LightInteractionInformation info = (LightInteractionInformation)controller.GetFunctionalityInfoByType(typeof(LightInteractionInformation));
+
+        interactingLight = go.GetComponent<VRLight>();
+        if (interactingLight)
+        {
+            ((VRWatchInteraction)vrInteraction).ShowWatch(controller);
+            vrInteraction.interactingWith = this;
+            interactedThisFrame = true;
+            info.OnOffTimeObject.SetActive(true);
+
+            if (interactingLight.taskCompleted[0] != null)
+            {
+                interactingLight.taskCompleted[0].Invoke();
+            }
+        }
+        else
+        {
+            controllerManager.GetController(controller.trackedObj).TriggerHapticPulse(3000);
+        }
+    }
+
+    protected override void ActiveControllerUpdate(ControllerInformation controller)
+    {
+        if (vrInteraction.interactingWith && vrInteraction.interactingWith == this)
+        {
+            LightInteractionInformation info = (LightInteractionInformation)controller.GetFunctionalityInfoByType(typeof(LightInteractionInformation));
+            if (!interactedThisFrame)
+            {
+                if (controllerManager.GetController(controller.trackedObj).GetPressUp(vrInteraction.menuButton))
+                {
+                    vrInteraction.interactingWith = null;
+                    ((VRWatchInteraction)vrInteraction).HideWatch(controller);
+                    info.OnOffTimeObject.SetActive(false);
+                }
+            }
+            else
+            {
+                interactedThisFrame = !interactedThisFrame;
+            }
+            int time = ((VRWatchInteraction)vrInteraction).getTimeByVector(vrInteraction.touchPadValue);
+            if (time != 0)
+            {
+                WatchInteractionInformation watchInfo = (WatchInteractionInformation)controller.GetFunctionalityInfoByType(typeof(WatchInteractionInformation));
+
+                if (!watchInfo.isWatchOnFront)
+                {
+                    time += 12;
+                }
+                if (info.isOnTime && Mathf.Floor(time) != Mathf.Floor(interactingLight.StartTime))
+                {
+                    interactingLight.StartTime = time;
+                    controllerManager.GetController(controller.trackedObj).TriggerHapticPulse(3000);
+                    UpdateDisplay(controller);
+                    if (interactingLight.taskCompleted[2] != null)
+                    {
+                        interactingLight.taskCompleted[2].Invoke();
+                    }
+                }
+                else if (Mathf.Floor(time) != Mathf.Floor(interactingLight.EndTime))
+                {
+                    interactingLight.EndTime = time;
+                    controllerManager.GetController(controller.trackedObj).TriggerHapticPulse(3000);
+                    UpdateDisplay(controller);
+                    if (interactingLight.taskCompleted[2] != null)
+                    {
+                        interactingLight.taskCompleted[2].Invoke();
+                    }
+                }
+            }
+            if (controllerManager.GetController(controller.trackedObj).GetPressDown(Valve.VR.EVRButtonId.k_EButton_Grip))
+            {
+                if (interactingLight.taskCompleted[1] != null)
+                {
+                    interactingLight.taskCompleted[1].Invoke();
+                }
+            }
+        }
+    }
+
+    protected override void NonActiveControllerUpdate(ControllerInformation controller)
+    {
+        if (vrInteraction.interactingWith && vrInteraction.interactingWith == this)
+        {
+            if (!interactedThisFrame)
+            {
+                if (controllerManager.GetController(controllerManager.getOtherController(controller).trackedObj).GetPressUp(vrInteraction.menuButton))
+                {
+                    LightInteractionInformation info = (LightInteractionInformation)controller.GetFunctionalityInfoByType(typeof(LightInteractionInformation));
+
+                    ((VRWatchInteraction)vrInteraction).HideWatch(controller);
+                    info.OnOffTimeObject.SetActive(false);
+                }
+            }
+        }
+    }
+
+    protected override void AnyControllerUpdate(ControllerInformation controller) { }
 }

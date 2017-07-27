@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class ControllerGrabObject : ControllerFunctionality
 {
-    JointBreakSensor jointBreakSensor;
+    JointBreakSensor jointBreakSensor; //TODO
 
     protected override void Awake()
     {
@@ -81,7 +81,6 @@ public class ControllerGrabObject : ControllerFunctionality
 
 
         FixedJoint[] joints = info.trackedObj.gameObject.GetComponents<FixedJoint>();
-        Debug.Log("Joints deleted: " + joints.Length);
         if (joints != null && joints.Length > 0)
         {
             foreach (var item in joints)
@@ -102,7 +101,6 @@ public class ControllerGrabObject : ControllerFunctionality
             grabObjInfo.ObjectReleased.Invoke(grabObjInfo.objectInHand);
         }
 
-        Debug.Log("Object Released on: " + info.trackedObj);
         grabObjInfo.objectInHand = null;
     }
 
