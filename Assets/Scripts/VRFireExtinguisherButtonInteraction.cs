@@ -29,7 +29,7 @@ public class VRFireExtinguisherButtonInteraction : VRInteraction {
 
         if (interactingWith)
         {
-            if (Controller.GetPressDown(gripButton))
+            if (Controller.GetPressDown(Valve.VR.EVRButtonId.k_EButton_Grip))
             {
                 StartCoroutine(SwitchSide());
             }
