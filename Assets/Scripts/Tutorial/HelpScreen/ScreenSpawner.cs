@@ -5,15 +5,22 @@ using UnityEngine;
 public class ScreenSpawner : MonoBehaviour
 {
     public GameObject screenPrefab;
+    public GameObject explosionPrefab;
     public Vector3 spawnOffset;
     private TutorialScreen screen;
+    private GameObject explosion;
     private bool spawned = false;
 
 
     [ContextMenu("Spawn")]
-    private void Spawn()
+    private IEnumerator Spawn()
     {
         spawned = true;
+        
+
+        GameObject explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        Destroy(explosion, 1);
+
         screen = Instantiate(screenPrefab).GetComponent<TutorialScreen>();
         screen.transform.position = transform.position + spawnOffset;
 
@@ -24,12 +31,16 @@ public class ScreenSpawner : MonoBehaviour
         rot.y -= 90;
 
         screen.transform.rotation = Quaternion.Euler(rot);
+        yield return new WaitForSeconds(2);
+        
+
+        
     }
 
     private void OnCollisionEnter(Collision collision)
     {if (!spawned)
         {
-            Spawn();
+            StartCoroutine(Spawn());
             Destroy(gameObject);
         }
     }
